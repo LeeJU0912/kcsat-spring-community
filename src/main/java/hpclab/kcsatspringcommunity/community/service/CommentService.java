@@ -11,8 +11,6 @@ public interface CommentService {
 
     List<CommentResponseForm> getHotComments(Long pId);
 
-    List<CommentResponseForm> getComments(Long id);
-
     void deleteComment(Long id);
 
     String setCommentCount(Long commentId);
