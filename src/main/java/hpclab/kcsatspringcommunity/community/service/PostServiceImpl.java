@@ -119,7 +119,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findByIdWithComments(postId);
         return PostDetailForm.builder()
                 .post(new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId()))))
-                .comments(post.getComment().stream().map(comment -> new CommentResponseForm()).toList())
+                .comments(post.getComment().stream().map(CommentResponseForm::new).toList())
                 .build();
     }
 
