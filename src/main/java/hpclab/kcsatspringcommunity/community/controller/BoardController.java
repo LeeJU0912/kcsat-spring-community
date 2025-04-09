@@ -184,7 +184,7 @@ public class BoardController {
 
         PostDetailForm post = postService.getPost(pId);
 
-        if (!Objects.equals(userEmail, post.getPost().getEmail())) {
+        if (!userEmail.equals(post.getPost().getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("error");
         }
 
@@ -206,7 +206,7 @@ public class BoardController {
 
         PostDetailForm post = postService.getPost(pId);
 
-        if (!Objects.equals(userEmail, post.getPost().getEmail())) {
+        if (!userEmail.equals(post.getPost().getEmail())) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body("error");
         }
 
