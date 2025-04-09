@@ -2,6 +2,7 @@ package hpclab.kcsatspringcommunity.community.service;
 
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.domain.Post;
+import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostWriteForm;
@@ -73,17 +74,17 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Boolean saveQuestionFromPost(Long qId, String userEmail) {
+    public boolean saveQuestionFromPost(Long qId, String userEmail) {
         Question question = questionJPARepository.findById(qId).orElseThrow(() -> new IllegalArgumentException("question not found"));
         bookQuestionService.saveQuestion(qId, userEmail);
         questionJPARepository.save(question);
 
-        return Boolean.TRUE;
+        return true;
     }
 
     @Override
     public Page<PostResponseForm> getPostList(Pageable pageable) {
-        Page<Post> posts = postRepository.findAllWithComments(pageable);
+        Page<Post> posts = postRepository.findAll(pageable);
         return makePostPageDTO(pageable, posts);
     }
 
@@ -115,9 +116,10 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDetailForm getPost(Long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("찾는 게시글이 없습니다."));
+        Post post = postRepository.findByIdWithComments(postId);
         return PostDetailForm.builder()
                 .post(new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId()))))
+                .comments(post.getComment().stream().map(comment -> new CommentResponseForm()).toList())
                 .build();
     }
 
@@ -158,10 +160,7 @@ public class PostServiceImpl implements PostService {
 
         String user = "post:userView:" + postId + ":" + userEmail;
 
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(user))) {
-            // 예외 발생
-        }
-        else {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
             redisTemplate.opsForValue().increment(viewCount);
             redisTemplate.opsForValue().set(user, "1");
         }
@@ -180,10 +179,7 @@ public class PostServiceImpl implements PostService {
         String upVote = "post:upVote:" + postId;
         String user = "post:userVote:" + postId + ":" + userEmail;
 
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(user))) {
-            // 예외 발생
-        }
-        else {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
             redisTemplate.opsForValue().increment(upVote);
             redisTemplate.opsForValue().set(user, "1");
         }
@@ -192,7 +188,6 @@ public class PostServiceImpl implements PostService {
 
         if (Integer.parseInt(nowVote) >= 20) {
             Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("핫게 등록 실패."));
-
             post.gettingHot();
 
             postRepository.save(post);
@@ -208,10 +203,7 @@ public class PostServiceImpl implements PostService {
         String downVote = "post:downVote:" + postId;
         String user = "post:userVote:" + postId + ":" + userEmail;
 
-        if (Boolean.TRUE.equals(redisTemplate.hasKey(user))) {
-            // 예외 발생
-        }
-        else {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
             redisTemplate.opsForValue().increment(downVote);
             redisTemplate.opsForValue().set(user, "1");
         }

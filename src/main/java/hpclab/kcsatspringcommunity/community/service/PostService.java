@@ -11,7 +11,7 @@ public interface PostService {
 
     Long savePost(PostWriteForm postWriteForm, String email);
 
-    Boolean saveQuestionFromPost(Long qId, String userEmail);
+    boolean saveQuestionFromPost(Long qId, String userEmail);
 
     Page<PostResponseForm> getPostList(Pageable pageable);
 
