@@ -83,7 +83,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Page<PostResponseForm> getPostList(Pageable pageable) {
-        Page<Post> posts = postRepository.findAll(pageable);
+        Page<Post> posts = postRepository.findAllWithComments(pageable);
         return makePostPageDTO(pageable, posts);
     }
 
