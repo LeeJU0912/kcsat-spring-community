@@ -101,10 +101,7 @@ public class BoardController {
         PostDetailForm post = postService.getPost(pId);
 
         List<CommentResponseForm> hotComments = commentService.getHotComments(pId);
-        List<CommentResponseForm> comments = commentService.getComments(pId);
-
         post.setHotComments(hotComments);
-        post.setComments(comments);
 
         List<String> hotCommentsUpVoteCounter = new ArrayList<>();
         List<String> hotCommentsDownVoteCounter = new ArrayList<>();
@@ -119,7 +116,7 @@ public class BoardController {
             hotCommentsDownVoteCounter.add(commentDownVoteCount);
         }
 
-        for (CommentResponseForm comment : comments) {
+        for (CommentResponseForm comment : post.getComments()) {
             String commentUpVoteCount = commentService.getIncreaseCommentCount(comment.getCId());
             commentsUpVoteCounter.add(commentUpVoteCount);
 
@@ -228,7 +225,7 @@ public class BoardController {
     public ResponseEntity<String> saveQuestionFromPost(@RequestHeader("Authorization") String token, @PathVariable Long qId) {
         String userEmail = jwtUtil.getClaims(token).get("userEmail").toString();
 
-        if (postService.saveQuestionFromPost(qId, userEmail) == Boolean.FALSE) {
+        if (!postService.saveQuestionFromPost(qId, userEmail)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("error");
         }
 
