@@ -1,9 +1,9 @@
 jwt:
-  secret: type_your_secret_code
+  secret: ${JWT_SECRET}
 
 spring:
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_URL}:9092
     consumer:
       group-id: HPCLab
     producer:
