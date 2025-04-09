@@ -4,6 +4,7 @@ import hpclab.kcsatspringcommunity.JWTUtil;
 import hpclab.kcsatspringcommunity.myBook.dto.BookResponseForm;
 import hpclab.kcsatspringcommunity.myBook.service.BookQuestionService;
 import hpclab.kcsatspringcommunity.myBook.service.BookService;
+import hpclab.kcsatspringcommunity.myBook.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionDetailsDto;
@@ -21,7 +22,7 @@ public class CollectionController {
 
     private final BookService bookService;
     private final BookQuestionService bookQuestionService;
-    private final QuestionJPARepository questionJPARepository;
+    private final QuestionService questionService;
     private final JWTUtil jwtUtil;
 
 
@@ -63,9 +64,8 @@ public class CollectionController {
 
     // 문제 상세 데이터 조회
     @GetMapping("/api/community/question")
-    public ResponseEntity<QuestionDetailsDto> getQuestionById(@RequestParam int qId) {
-        Question question = questionJPARepository.findById(qId);
-
+    public ResponseEntity<QuestionDetailsDto> getQuestionById(@RequestParam Long qId) {
+        Question question = questionService.getQuestion(qId);
         return ResponseEntity.ok(new QuestionDetailsDto(question));
     }
 }
