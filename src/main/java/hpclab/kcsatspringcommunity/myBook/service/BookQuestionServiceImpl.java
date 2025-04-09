@@ -39,7 +39,7 @@ public class BookQuestionServiceImpl implements BookQuestionService {
     @Override
     public Long saveQuestion(Long qId, String userEmail) {
 
-        Question question = questionJPARepository.findById(qId).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 문제에여."));
+        Question question = questionJPARepository.findById(qId).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 문제입니다."));
 
         Book book = bookRepository.findByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException(userEmail));
 
