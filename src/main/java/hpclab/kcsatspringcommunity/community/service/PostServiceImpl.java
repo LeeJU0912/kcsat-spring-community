@@ -116,7 +116,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDetailForm getPost(Long postId) {
-        Post post = postRepository.findByIdWithComments(postId);
+        Post post = postRepository.findByIdWithComments(postId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));;
         return PostDetailForm.builder()
                 .post(new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId()))))
                 .comments(post.getComment().stream().map(CommentResponseForm::new).toList())

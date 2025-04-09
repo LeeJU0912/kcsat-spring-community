@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
@@ -20,5 +22,5 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
      * @return 게시글 상세 정보
      */
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.comment WHERE p.pId = :postId")
-    Post findByIdWithComments(@Param("postId") Long postId);
+    Optional<Post> findByIdWithComments(@Param("postId") Long postId);
 }
