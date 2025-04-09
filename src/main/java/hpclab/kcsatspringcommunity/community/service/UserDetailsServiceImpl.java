@@ -21,10 +21,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("일치하는 이름이 아닙니다."));
-        return toUserDetails(member);
+        return makeUserDetails(member);
     }
 
-    private UserDetails toUserDetails(Member member) {
+    private UserDetails makeUserDetails(Member member) {
         return User.builder()
                 .username(member.getEmail())
                 .password(member.getPassword())
