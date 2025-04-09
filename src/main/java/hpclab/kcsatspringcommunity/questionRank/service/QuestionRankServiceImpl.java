@@ -62,7 +62,9 @@ public class QuestionRankServiceImpl implements QuestionRankService {
 
         List<Question> questions = questionJPARepository.findAllByShareCounterGreaterThan(0L);
 
-        questions.sort((o1, o2) -> Double.compare(redditRankingAlgorithm(Double.valueOf(o2.getShareCounter()), o2.getCreatedDate()), redditRankingAlgorithm(Double.valueOf(o1.getShareCounter()), o1.getCreatedDate())));
+        questions.sort((o1, o2) ->
+                Double.compare(redditRankingAlgorithm(Double.valueOf(o2.getShareCounter()), o2.getCreatedDate()),
+                        redditRankingAlgorithm(Double.valueOf(o1.getShareCounter()), o1.getCreatedDate())));
 
         for (int i = 1; i <= min(questions.size(), 5); i++) {
             redisTemplate.opsForValue().set("question:rank:" + i, String.valueOf(questions.get(i - 1).getId()));
