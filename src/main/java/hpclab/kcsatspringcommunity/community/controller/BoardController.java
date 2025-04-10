@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * <p>회원 커뮤니티 게시판 컨트롤러 클래스입니다.</p>
