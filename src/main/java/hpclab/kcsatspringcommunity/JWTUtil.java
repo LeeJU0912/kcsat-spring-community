@@ -8,16 +8,22 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import java.security.Key;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * JWT 토큰 설정 관련 클래스입니다.
+ */
 @Component
 public class JWTUtil {
 
     private static final Long expiredMs = 3600000L;
 
     @Value("${jwt.secret}")
-    private String secretKey;
+    private static String secretKey;
+    private static final SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
 
     public String generateToken(String userEmail, String userName, Role role) {
         return Jwts.builder()
@@ -27,14 +33,14 @@ public class JWTUtil {
                 .id(UUID.randomUUID().toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
-                .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
+                .signWith(key)
                 .compact();
     }
 
     public Claims getClaims(String token) {
         String tokenWithoutHeader = token.split(" ")[1];
         return Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))) // SecretKey 변환
+                .verifyWith(key)
                 .build()
                 .parseSignedClaims(tokenWithoutHeader)
                 .getPayload();

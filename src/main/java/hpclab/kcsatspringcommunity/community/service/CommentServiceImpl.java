@@ -10,15 +10,28 @@ import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
 import hpclab.kcsatspringcommunity.community.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.min;
 
+/**
+ * 댓글 처리 로직을 담당하는 메서드입니다.
+ * <p>기능 목록</p>
+ * <ul>
+ *     <li>댓글 작성</li>
+ *     <li>댓글 삭제</li>
+ *     <li>게시글 인기 댓글 목록 조회(일반 댓글은 게시글과 묶음 조회)</li>
+ *     <li>댓글 추천/비추천수 조회</li>
+ *     <li>댓글 추천, 비추천</li>
+ * </ul>
+ */
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
@@ -30,9 +43,9 @@ public class CommentServiceImpl implements CommentService {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Override
-    public Long writeComment(CommentWriteForm commentWriteForm, Long id, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-        Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 게시물입니다."));
+    public Long writeComment(CommentWriteForm commentWriteForm, Long pId, String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다."));
+        Post post = postRepository.findById(pId).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 게시물입니다."));
 
         Comment comment = Comment.builder()
                 .content(commentWriteForm.getContent())
@@ -96,15 +109,26 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void deleteComment(Long id) {
-        commentRepository.deleteById(id);
+    public void deleteComment(Long cId) {
+        commentRepository.deleteById(cId);
     }
 
     @Override
-    public String setCommentCount(Long commentId) {
+    public boolean checkCommentWriter(String email, Long cId) {
+        Comment comment = commentRepository.findCommentWithMember(cId).orElseThrow(() -> new NoSuchElementException("찾을 수 없는 댓글입니다."));
 
-        String upVote = "comment:" + commentId + ":upVote";
-        String downVote = "comment:" + commentId + ":downVote";
+        if (comment.getMember().getEmail().equals(email)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public String setCommentCount(Long cId) {
+
+        String upVote = "comment:" + cId + ":upVote";
+        String downVote = "comment:" + cId + ":downVote";
         redisTemplate.opsForValue().set(upVote, "0");
         redisTemplate.opsForValue().set(downVote, "0");
 
@@ -112,10 +136,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public String increaseCommentCount(Long commentId, String userEmail) {
+    public String increaseCommentCount(Long cId, String userEmail) {
 
-        String upVote = "comment:" + commentId + ":upVote";
-        String user = "comment:" + commentId + ":user:" + userEmail;
+        String upVote = "comment:" + cId + ":upVote";
+        String user = "comment:" + cId + ":user:" + userEmail;
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
             redisTemplate.opsForValue().increment(upVote);

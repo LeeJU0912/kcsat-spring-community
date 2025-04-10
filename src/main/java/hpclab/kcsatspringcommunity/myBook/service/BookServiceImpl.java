@@ -10,6 +10,9 @@ import hpclab.kcsatspringcommunity.question.dto.QuestionResponseForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * 회원별 나만의 문제집 생성/조회 로직을 구현한 클래스입니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
@@ -27,14 +30,26 @@ public class BookServiceImpl implements BookService {
         return BookToBookResponseForm(bookRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("Member not found")));
     }
 
+    /**
+     * Book -> BookDTO 형태로 변환하는 메서드입니다.
+     * @param book 순수한 Book 질문 객체
+     * @return BookDTO 객체로 변환하여 데이터 정합성을 보장합니다.
+     */
     private BookResponseForm BookToBookResponseForm(Book book) {
         return BookResponseForm.builder()
-                .question(book.getBookQuestions().stream().map(this::questionToDto).toList())
+                .question(book.getBookQuestions().stream()
+                        .map(BookQuestion::getQuestion)
+                        .map(this::questionToDto)
+                        .toList())
                 .build();
     }
 
-    private QuestionResponseForm questionToDto(BookQuestion bookQuestion) {
-        Question question = bookQuestion.getQuestion();
+    /**
+     * Question -> QuestionDTO 형태로 변환하는 메서드입니다.
+     * @param question 순수한 Question 질문 객체
+     * @return QuestionDTO 객체로 변환하여 데이터 정합성을 보장합니다.
+     */
+    private QuestionResponseForm questionToDto(Question question) {
 
         return QuestionResponseForm.builder()
                 .qId(question.getId())

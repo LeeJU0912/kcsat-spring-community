@@ -39,7 +39,7 @@ public class QuestionRankServiceImpl implements QuestionRankService {
 
             Long qId = Long.parseLong(qIdString);
 
-            Question question = questionJPARepository.findById(qId).orElseThrow(() -> new IllegalArgumentException("없는 문제입니다."));
+            Question question = questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("없는 문제입니다."));
 
             questions.add(QuestionResponseForm.builder()
                     .qId(question.getId())
@@ -56,7 +56,8 @@ public class QuestionRankServiceImpl implements QuestionRankService {
     }
 
 
-    @Scheduled(cron = "0 0 0 ? * MON", zone = "Asia/Seoul") // 월요일 자정마다 실행
+    @Override
+    @Scheduled(cron = "0 0 0 ? * MON", zone = "Asia/Seoul")
     public void updateQuestionRank() {
         log.info("cron update question rank");
 
@@ -71,7 +72,14 @@ public class QuestionRankServiceImpl implements QuestionRankService {
         }
     }
 
-
+    /**
+     * RedditRankingAlgorithm에 따른 선호도 갱신
+     * (log10(추천 수) + 작성 시간 내림차순) 공식으로 계산
+     *
+     * @param up 문제 공유 수
+     * @param time 문제 생성 시각
+     * @return 추천수 + (시간 변환값) 으로 결과 반환
+     */
     private Double redditRankingAlgorithm(double up, LocalDateTime time) {
         double convertedTime = (double) time.atZone(ZoneOffset.UTC).toEpochSecond();
         return log10(up) + convertedTime / 45000;

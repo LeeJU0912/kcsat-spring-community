@@ -9,36 +9,45 @@ import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionDetailsDto;
 import hpclab.kcsatspringcommunity.question.dto.QuestionDto;
-import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 나만의 문제를 저장하는 MyBook 관련 컨트롤러 메서드입니다.
+ */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class CollectionController {
+public class BookController {
 
     private final BookService bookService;
     private final BookQuestionService bookQuestionService;
     private final QuestionService questionService;
     private final JWTUtil jwtUtil;
 
-
-    // 마이북 반환
+    /**
+     * 나만의 문제가 저장된 MyBook을 조회하는 메서드입니다.
+     *
+     * @param token 회원 JWT 토큰
+     * @return MyBook 상세 정보를 반환합니다.
+     */
     @GetMapping("/api/community/myBook")
     public ResponseEntity<BookResponseForm> myQuestion(@RequestHeader("Authorization") String token) {
         String userEmail = jwtUtil.getClaims(token).get("userEmail").toString();
         BookResponseForm book = bookService.findBook(userEmail);
 
-        log.info(book.toString());
-
         return ResponseEntity.ok(book);
     }
 
-
-    // 사용자 문제 저장 요청
+    /**
+     * 회원 커뮤니티 게시판 게시글에 첨부된 문제를 저장하는 메서드입니다.
+     *
+     * @param token 회원 JWT 토큰
+     * @param form 문제 세부 사항 DTO Form 객체
+     * @return 문제 저장에 성공하면 OK로 응답합니다.
+     */
     @PostMapping("/api/community/question/save")
     public ResponseEntity<String> saveQuestion(@RequestHeader("Authorization") String token, @RequestBody QuestionDto form) {
         String userEmail = jwtUtil.getClaims(token).get("userEmail").toString();
@@ -61,8 +70,12 @@ public class CollectionController {
         return ResponseEntity.ok("문제 저장 성공");
     }
 
-
-    // 문제 상세 데이터 조회
+    /**
+     * 문제에 대한 세부 항목을 조회하는 메서드입니다.
+     *
+     * @param qId 문제 ID
+     * @return 문제 세부 사항을 반환합니다.
+     */
     @GetMapping("/api/community/question")
     public ResponseEntity<QuestionDetailsDto> getQuestionById(@RequestParam Long qId) {
         Question question = questionService.getQuestion(qId);

@@ -21,6 +21,7 @@ import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +45,7 @@ public class PostServiceImpl implements PostService {
     // 게시글 저장
     @Override
     public Long savePost(PostWriteForm postWriteForm, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("이메일이 존재하지 않습니다."));
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("이메일이 존재하지 않습니다."));
         Post result;
 
         if (postWriteForm.getQId() == null) {
@@ -55,7 +56,7 @@ public class PostServiceImpl implements PostService {
                     .build();
         }
         else {
-            Question question = questionJPARepository.findById(postWriteForm.getQId()).orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
+            Question question = questionJPARepository.findWithChoicesById(postWriteForm.getQId()).orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
 
             result = Post.builder()
                     .postTitle(postWriteForm.getTitle())
@@ -75,7 +76,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public boolean saveQuestionFromPost(Long qId, String userEmail) {
-        Question question = questionJPARepository.findById(qId).orElseThrow(() -> new IllegalArgumentException("question not found"));
+        Question question = questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("question not found"));
         bookQuestionService.saveQuestion(qId, userEmail);
         questionJPARepository.save(question);
 
@@ -115,8 +116,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDetailForm getPost(Long postId) {
-        Post post = postRepository.findByIdWithComments(postId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));;
+    public PostDetailForm getPost(Long pId) {
+        Post post = postRepository.findByIdWithComments(pId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));;
         return PostDetailForm.builder()
                 .post(new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId()))))
                 .comments(post.getComment().stream().map(CommentResponseForm::new).toList())
@@ -124,8 +125,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDetailForm updatePost(Long postId, PostWriteForm postWriteForm) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+    public PostDetailForm updatePost(Long pId, PostWriteForm postWriteForm) {
+        Post post = postRepository.findById(pId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
 
         post.update(postWriteForm.getTitle(), postWriteForm.getContent());
 
@@ -135,17 +136,17 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void removePost(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+    public void removePost(Long pId) {
+        Post post = postRepository.findById(pId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
         postRepository.delete(post);
     }
 
     @Override
-    public String setPostCount(Long postId) {
+    public String setPostCount(Long pId) {
 
-        String viewCount = "post:viewCount:" + postId;
-        String upVote = "post:upVote:" + postId;
-        String downVote = "post:downVote:" + postId;
+        String viewCount = "post:viewCount:" + pId;
+        String upVote = "post:upVote:" + pId;
+        String downVote = "post:downVote:" + pId;
 
         redisTemplate.opsForValue().set(viewCount, "0");
         redisTemplate.opsForValue().set(upVote, "0");
@@ -155,10 +156,10 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public String increasePostViewCount(Long postId, String userEmail) {
-        String viewCount = "post:viewCount:" + postId;
+    public String increasePostViewCount(Long pId, String userEmail) {
+        String viewCount = "post:viewCount:" + pId;
 
-        String user = "post:userView:" + postId + ":" + userEmail;
+        String user = "post:userView:" + pId + ":" + userEmail;
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
             redisTemplate.opsForValue().increment(viewCount);
@@ -169,15 +170,15 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public String getPostViewCount(Long postId) {
-        return redisTemplate.opsForValue().get("post:viewCount:" + postId);
+    public String getPostViewCount(Long pId) {
+        return redisTemplate.opsForValue().get("post:viewCount:" + pId);
     }
 
     @Override
-    public String increasePostVoteCount(Long postId, String userEmail) {
+    public String increasePostVoteCount(Long pId, String userEmail) {
 
-        String upVote = "post:upVote:" + postId;
-        String user = "post:userVote:" + postId + ":" + userEmail;
+        String upVote = "post:upVote:" + pId;
+        String user = "post:userVote:" + pId + ":" + userEmail;
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
             redisTemplate.opsForValue().increment(upVote);
@@ -187,7 +188,7 @@ public class PostServiceImpl implements PostService {
         String nowVote = redisTemplate.opsForValue().get(upVote);
 
         if (Integer.parseInt(nowVote) >= 20) {
-            Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("핫게 등록 실패."));
+            Post post = postRepository.findById(pId).orElseThrow(() -> new IllegalArgumentException("핫게 등록 실패."));
             post.gettingHot();
 
             postRepository.save(post);
@@ -198,10 +199,10 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
-    public String decreasePostVoteCount(Long postId, String userEmail) {
+    public String decreasePostVoteCount(Long pId, String userEmail) {
 
-        String downVote = "post:downVote:" + postId;
-        String user = "post:userVote:" + postId + ":" + userEmail;
+        String downVote = "post:downVote:" + pId;
+        String user = "post:userVote:" + pId + ":" + userEmail;
 
         if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
             redisTemplate.opsForValue().increment(downVote);
@@ -212,15 +213,20 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public String getIncreasePostVoteCount(Long postId) {
-        return redisTemplate.opsForValue().get("post:upVote:" + postId);
+    public String getIncreasePostVoteCount(Long pId) {
+        return redisTemplate.opsForValue().get("post:upVote:" + pId);
     }
 
     @Override
-    public String getDecreasePostVoteCount(Long postId) {
-        return redisTemplate.opsForValue().get("post:downVote:" + postId);
+    public String getDecreasePostVoteCount(Long pId) {
+        return redisTemplate.opsForValue().get("post:downVote:" + pId);
     }
 
+
+    /**
+     * 회원의 게시글 조회 여부를 초기화하는 함수.
+     * 1000개 단위로 불러와서, 100개씩 한 번에 삭제하는 batch 처리.
+     */
     @Override
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul") // 매일 자정에 실행
     public void resetPostView() {

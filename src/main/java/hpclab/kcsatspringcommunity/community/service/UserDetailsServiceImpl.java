@@ -11,6 +11,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * (현재는 사용하지 않음. memberService로 대체 중. 수정 필요)
+ *
+ * Spring Security 관련 회원 조회 메서드입니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {

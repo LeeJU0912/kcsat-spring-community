@@ -2,7 +2,7 @@ package hpclab.kcsatspringcommunity.admin.service;
 
 
 import hpclab.kcsatspringcommunity.admin.domain.UserRequest;
-import hpclab.kcsatspringcommunity.admin.dto.RequestType;
+import hpclab.kcsatspringcommunity.admin.domain.RequestType;
 import hpclab.kcsatspringcommunity.admin.dto.UserRequestRequestForm;
 import hpclab.kcsatspringcommunity.admin.dto.UserRequestResponseForm;
 import hpclab.kcsatspringcommunity.admin.repository.UserRequestRepository;
@@ -16,13 +16,15 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * UserRequestService 구현체입니다. @Override 메서드 설명은 인터페이스 참조.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserRequestServiceImpl implements UserRequestService {
 
     private final UserRequestRepository userRequestRepository;
     private final MemberRepository memberRepository;
-    private final QuestionJPARepository questionRepository;
     private final QuestionJPARepository questionJPARepository;
 
     @Override
@@ -30,7 +32,7 @@ public class UserRequestServiceImpl implements UserRequestService {
         return UserRequestResponseForm.builder()
                 .type(RequestType.QUESTION_ERROR)
                 .content("QUESTION_ERROR")
-                .question(questionJPARepository.findById(qId).orElseThrow(() -> new IllegalArgumentException("getQuestionErrorForm: 없는 문제입니다.")))
+                .question(questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("getQuestionErrorForm: 없는 문제입니다.")))
                 .member(memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("getQuestionErrorForm: 없는 사람입니다.")))
                 .build();
     }
@@ -55,7 +57,7 @@ public class UserRequestServiceImpl implements UserRequestService {
     }
 
     @Override
-    public UserRequestResponseForm saveUserRequest(UserRequestResponseForm form, String email) {
+    public UserRequestResponseForm updateUserRequestForm(UserRequestResponseForm form, String email) {
 
         if (form.getQuestion() == null) {
             userRequestRepository.save(UserRequest.builder()
@@ -99,7 +101,7 @@ public class UserRequestServiceImpl implements UserRequestService {
                         .type(request.getType())
                         .content(request.getContent())
                         .member(member)
-                        .question(questionRepository.findById(request.getQId()).orElseThrow(() -> new IllegalArgumentException("getUserRequests: 없는 문제입니다.")))
+                        .question(questionJPARepository.findWithChoicesById(request.getQId()).orElseThrow(() -> new IllegalArgumentException("getUserRequests: 없는 문제입니다.")))
                         .build();
             }
 

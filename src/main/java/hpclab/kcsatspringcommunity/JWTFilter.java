@@ -12,12 +12,18 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 
+/**
+ * JWT 인증 필터 클래스입니다.
+ * 매 요청마다 이 클래스의 필터를 통과하여 올바른 사용자인지 검증합니다.
+ */
+@Component
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -26,21 +32,27 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        // HTTP 헤더의 AUTHORIZATION 항목 추출
         final String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         logger.info("authorization = " + authorization);
 
+        // Options Preflight 요청인 경우, 필터 생략
         if (request.getMethod().equals(HttpMethod.OPTIONS.name())) {
-            logger.info("OPTIONS Preflight 요청입니다.");
             filterChain.doFilter(request, response);
             return;
         }
+
+        // 요청 URI 추출
         String path = request.getRequestURI();
+
+        // 상태 체크 URI인 경우, 필터 생략
         if (path.startsWith("/health-check") || path.startsWith("/security-check") || path.startsWith("/reissue")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // 인증 결과가 없으면, 필터 생략
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             logger.error("authorization 이 없습니다.");
             filterChain.doFilter(request, response);
@@ -59,7 +71,12 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        // UserName Token에서 꺼내기
+        /**
+         * (수정 필요)
+         * 회원 email 아이디를 JWT에 저장하면 보안상 큰 문제 발생 여지가 있음.
+         * Redis에 회원키:email 아이디 이런 형태로 매핑하여 저장하는 로직 도입 필요.
+         */
+        // 회원 email 아이디와 권한을 Token에서 꺼내기
         String userEmail = claims.get("userEmail", String.class);
         String role = claims.get("role", String.class);
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);

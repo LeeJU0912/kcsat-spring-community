@@ -12,6 +12,10 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
+/**
+ * 게시글 검색 관련 특수한 조건으로 DB에 정보를 요구하는 클래스입니다.
+ * QueryDSL을 사용하여 여러 조건이 달린 쿼리를 수행합니다.
+ */
 public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
     JPAQueryFactory queryFactory;

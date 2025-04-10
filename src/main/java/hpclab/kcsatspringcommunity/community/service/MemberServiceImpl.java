@@ -14,6 +14,10 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * 회원 정보 처리 로직을 담당하는 클래스입니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {

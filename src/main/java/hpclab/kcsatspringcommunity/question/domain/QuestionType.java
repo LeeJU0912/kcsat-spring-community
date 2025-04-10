@@ -4,6 +4,10 @@ import lombok.Getter;
 
 import java.util.Random;
 
+/**
+ * 문제 타입을 정의한 열거형 메서드입니다.
+ * 총 15가지가 존재합니다.
+ */
 @Getter
 public enum QuestionType {
 

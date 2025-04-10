@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * (수정 필요)
+ * 회원 인증 관련 서비스 클래스입니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -22,6 +26,11 @@ public class UserService {
     private final JWTUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
 
+    /**
+     * 회원 로그인 처리 메서드입니다.
+     * @param form 로그인 포맷
+     * @return JWT 토큰 발급
+     */
     public String login(MemberSignInForm form) {
         Member member = memberRepository.findByEmail(form.getUserEmail()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 

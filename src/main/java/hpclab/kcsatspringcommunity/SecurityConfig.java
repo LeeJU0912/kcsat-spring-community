@@ -15,24 +15,46 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Spring Security 설정 클래스입니다.
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JWTUtil jwtUtil;
+    private final JWTFilter jwtFilter;
 
-
+    /**
+     * Password 인코더 정의 Bean입니다.
+     * @return BCryptPasswordEncoder 사용.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * 권한의 계층을 정의합니다.
+     * @return ADMIN이 USER보다 상위 권한임을 선언합니다.
+     */
     @Bean
     public RoleHierarchy roleHierarchy() {
         return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_USER");
     }
 
+    /**
+     * Spring Security의 HTTP 보안 설정을 구성하는 Bean입니다.
+     *
+     * - 기본 인증, CORS, CSRF, 폼 로그인(대신 JWT) 비활성화
+     * - 권한에 따른 URL 접근 제어 설정
+     * - 세션을 사용하지 않는 JWT 기반 인증 방식 적용
+     * - JWTFilter를 UsernamePasswordAuthenticationFilter 앞에 등록
+     *
+     * @param http HttpSecurity 객체 (Spring Security 보안 설정 담당)
+     * @return SecurityFilterChain 보안 필터 체인
+     * @throws Exception 설정 중 발생할 수 있는 예외
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -52,7 +74,7 @@ public class SecurityConfig {
                         sessionManagement ->
                                 sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

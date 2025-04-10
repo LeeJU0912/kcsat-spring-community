@@ -10,14 +10,16 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-
+/**
+ * 회원 커뮤니티 게시판 게시글을 DB와 상호작용하는 Spring Data JPA 인터페이스입니다.
+ */
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
 
     /**
      * 게시글 ID에 대해 게시글 상세 정보를 가져웁니다.
+     * Fetch join 적용으로 post 가져올 때 comment도 같이 가져오도록 합니다. (N+1 문제 방지)
      *
-     * N+1 처리 Fetch join 적용으로 post 가져올 때 comment도 같이 가져오도록 합니다.
      * @param postId 게시글 ID
      * @return 게시글 상세 정보
      */

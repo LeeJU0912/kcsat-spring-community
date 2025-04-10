@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+/**
+ * 문제 간이형 DTO 클래스입니다.
+ * 각 항목 별 자세한 설명은 Question 클래스 참조.
+ */
 @Data
 @Builder
 @AllArgsConstructor
