@@ -232,7 +232,10 @@ public class PostServiceImpl implements PostService {
     public void resetPostView() {
         log.info("cron reset post userViewChk");
 
-        ScanOptions scanOptions = ScanOptions.scanOptions().match("post:userView:*").count(1000).build();
+        ScanOptions scanOptions = ScanOptions.scanOptions()
+                .match("post:userView:*")
+                .count(1000)
+                .build();
 
         Cursor<byte[]> keys = redisTemplate.getConnectionFactory().getConnection().scan(scanOptions);
 
