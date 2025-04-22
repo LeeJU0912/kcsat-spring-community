@@ -1,4 +1,4 @@
-package hpclab.kcsatspringcommunity.myBook.service;
+package hpclab.kcsatspringcommunity.question.service;
 
 import hpclab.kcsatspringcommunity.question.domain.Question;
 
