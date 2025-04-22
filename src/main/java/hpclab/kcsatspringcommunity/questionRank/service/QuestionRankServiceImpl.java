@@ -26,7 +26,6 @@ public class QuestionRankServiceImpl implements QuestionRankService {
     private final RedisTemplate<String, String> redisTemplate;
     private final QuestionJPARepository questionJPARepository;
 
-
     @Override
     public List<QuestionResponseForm> getRankedQuestions() {
         List<QuestionResponseForm> questions = new ArrayList<>();
@@ -39,7 +38,8 @@ public class QuestionRankServiceImpl implements QuestionRankService {
 
             Long qId = Long.parseLong(qIdString);
 
-            Question question = questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("없는 문제입니다."));
+            Question question = questionJPARepository.findWithChoicesById(qId)
+                    .orElseThrow(() -> new IllegalArgumentException("없는 문제입니다."));
 
             questions.add(QuestionResponseForm.builder()
                     .qId(question.getId())
