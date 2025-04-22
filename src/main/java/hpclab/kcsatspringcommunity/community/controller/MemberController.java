@@ -42,7 +42,7 @@ public class MemberController {
 
             return ResponseEntity.ok("회원가입 완료.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("회원가입에 실패하였습니다.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입에 실패하였습니다.");
         }
     }
 
