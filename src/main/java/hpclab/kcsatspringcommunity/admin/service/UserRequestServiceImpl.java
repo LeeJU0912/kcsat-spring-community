@@ -27,11 +27,13 @@ public class UserRequestServiceImpl implements UserRequestService {
     private final MemberRepository memberRepository;
     private final QuestionJPARepository questionJPARepository;
 
+    private static final String QUESTION_ERROR = "QUESTION_ERROR";
+
     @Override
     public UserRequestResponseForm getQuestionErrorForm(Long qId, String email) {
         return UserRequestResponseForm.builder()
                 .type(RequestType.QUESTION_ERROR)
-                .content("QUESTION_ERROR")
+                .content(QUESTION_ERROR)
                 .question(questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("getQuestionErrorForm: 없는 문제입니다.")))
                 .member(memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("getQuestionErrorForm: 없는 사람입니다.")))
                 .build();
