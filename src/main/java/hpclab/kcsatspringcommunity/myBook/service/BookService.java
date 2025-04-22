@@ -1,6 +1,6 @@
 package hpclab.kcsatspringcommunity.myBook.service;
 
-import hpclab.kcsatspringcommunity.myBook.dto.BookResponseForm;
+import hpclab.kcsatspringcommunity.myBook.domain.Book;
 
 /**
  * 회원 관련 나만의 문제집을 생성/조회 하는 기능을 정의한 인터페이스입니다.
@@ -20,5 +20,5 @@ public interface BookService {
      * @param userEmail 회원 email 아이디
      * @return 나만의 문제집 DTO 반환
      */
-    BookResponseForm findBook(String userEmail);
+    Book findBook(String userEmail);
 }
