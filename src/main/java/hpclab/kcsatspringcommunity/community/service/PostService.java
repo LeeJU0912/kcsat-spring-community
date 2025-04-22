@@ -28,9 +28,9 @@ public interface PostService {
      *
      * @param qId 문제 ID
      * @param userEmail 회원 email 아이디
-     * @return 문제 저장에 성공했다면 true를 반환합니다.
+     * @return 문제 ID를 반환합니다.
      */
-    boolean saveQuestionFromPost(Long qId, String userEmail);
+    Long saveQuestionFromPost(Long qId, String userEmail);
 
     /**
      * 게시글 목록을 조회하는 메서드입니다.
