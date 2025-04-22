@@ -15,7 +15,8 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public Question getQuestion(Long qId) {
-        return questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("Question not found"));
+        return questionJPARepository.findWithChoicesById(qId)
+                .orElseThrow(() -> new IllegalArgumentException("Question not found"));
     }
 
     @Override
