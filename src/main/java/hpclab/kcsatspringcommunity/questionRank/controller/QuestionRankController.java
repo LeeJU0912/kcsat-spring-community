@@ -4,6 +4,7 @@ import hpclab.kcsatspringcommunity.question.dto.QuestionResponseForm;
 import hpclab.kcsatspringcommunity.questionRank.service.QuestionRankService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +31,10 @@ public class QuestionRankController {
         log.info("weekly question rank");
 
         // weekly Question 5개 랭킹 순서대로 가져 와서 모델에 넣기.
-        return ResponseEntity.ok(questionRankService.getRankedQuestions());
+        try {
+            return ResponseEntity.ok(questionRankService.getRankedQuestions());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 }
