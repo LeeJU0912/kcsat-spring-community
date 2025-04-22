@@ -17,4 +17,9 @@ public class QuestionServiceImpl implements QuestionService {
     public Question getQuestion(Long qId) {
         return questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("Question not found"));
     }
+
+    @Override
+    public Long saveQuestion(Question question) {
+        return questionJPARepository.save(question).getId();
+    }
 }
