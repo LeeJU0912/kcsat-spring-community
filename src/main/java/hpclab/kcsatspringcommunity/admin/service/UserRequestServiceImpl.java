@@ -8,6 +8,8 @@ import hpclab.kcsatspringcommunity.admin.dto.UserRequestResponseForm;
 import hpclab.kcsatspringcommunity.admin.repository.UserRequestRepository;
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
+import hpclab.kcsatspringcommunity.community.service.MemberService;
+import hpclab.kcsatspringcommunity.myBook.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,8 +27,9 @@ import java.util.List;
 public class UserRequestServiceImpl implements UserRequestService {
 
     private final UserRequestRepository userRequestRepository;
-    private final MemberRepository memberRepository;
-    private final QuestionJPARepository questionJPARepository;
+
+    private final MemberService memberService;
+    private final QuestionService questionService;
 
     private static final String QUESTION_ERROR = "QUESTION_ERROR";
 
@@ -36,10 +39,8 @@ public class UserRequestServiceImpl implements UserRequestService {
         return UserRequestResponseForm.builder()
                 .type(RequestType.QUESTION_ERROR)
                 .content(QUESTION_ERROR)
-                .question(questionJPARepository.findWithChoicesById(qId)
-                        .orElseThrow(() -> new IllegalArgumentException("getQuestionErrorForm: 없는 문제입니다.")))
-                .member(memberRepository.findByEmail(email)
-                        .orElseThrow(() -> new UsernameNotFoundException("getQuestionErrorForm: 없는 사람입니다.")))
+                .question(questionService.getQuestion(qId))
+                .member(memberService.findMemberByEmail(email))
                 .build();
     }
 
@@ -49,8 +50,7 @@ public class UserRequestServiceImpl implements UserRequestService {
         return UserRequestResponseForm.builder()
                 .type(RequestType.IMPROVING)
                 .content(form.getContent())
-                .member(memberRepository.findByEmail(email)
-                        .orElseThrow(() -> new UsernameNotFoundException("getImprovingForm: 없는 사람입니다.")))
+                .member(memberService.findMemberByEmail(email))
                 .build();
     }
 
@@ -60,7 +60,7 @@ public class UserRequestServiceImpl implements UserRequestService {
         return UserRequestResponseForm.builder()
                 .type(RequestType.ETC)
                 .content(form.getContent())
-                .member(memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("getETCForm: 없는 사람입니다.")))
+                .member(memberService.findMemberByEmail(email))
                 .build();
     }
 
@@ -97,7 +97,7 @@ public class UserRequestServiceImpl implements UserRequestService {
         for (UserRequest request : requests) {
             UserRequestResponseForm form;
 
-            Member member = memberRepository.findByEmail(request.getUsername()).orElseThrow(() -> new UsernameNotFoundException("getUserRequests: 없는 사람입니다."));
+            Member member = memberService.findMemberByEmail(request.getUsername());
 
             if (request.getQId() == 0L) {
                 form = UserRequestResponseForm.builder()
@@ -111,7 +111,7 @@ public class UserRequestServiceImpl implements UserRequestService {
                         .type(request.getType())
                         .content(request.getContent())
                         .member(member)
-                        .question(questionJPARepository.findWithChoicesById(request.getQId()).orElseThrow(() -> new IllegalArgumentException("getUserRequests: 없는 문제입니다.")))
+                        .question(questionService.getQuestion(request.getQId()))
                         .build();
             }
 
