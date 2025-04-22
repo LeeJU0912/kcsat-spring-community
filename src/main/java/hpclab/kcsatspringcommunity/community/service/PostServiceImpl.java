@@ -116,7 +116,9 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDetailForm getPost(Long pId) {
-        Post post = postRepository.findByIdWithComments(pId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
+        Post post = postRepository.findByIdWithComments(pId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
+
         return PostDetailForm.builder()
                 .post(new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId()))))
                 .comments(post.getComment().stream().map(CommentResponseForm::new).toList())
@@ -125,7 +127,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDetailForm updatePost(Long pId, PostWriteForm postWriteForm) {
-        Post post = postRepository.findById(pId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+        Post post = postRepository.findById(pId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
 
         post.update(postWriteForm.getTitle(), postWriteForm.getContent());
 
@@ -136,7 +139,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public void removePost(Long pId) {
-        Post post = postRepository.findById(pId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+        Post post = postRepository.findById(pId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
         postRepository.delete(post);
     }
 
@@ -157,7 +161,6 @@ public class PostServiceImpl implements PostService {
     @Override
     public String increasePostViewCount(Long pId, String userEmail) {
         String viewCount = "post:viewCount:" + pId;
-
         String user = "post:userView:" + pId + ":" + userEmail;
 
         if (!redisTemplate.hasKey(user)) {
@@ -186,14 +189,19 @@ public class PostServiceImpl implements PostService {
 
         String nowVote = redisTemplate.opsForValue().get(upVote);
 
-        if (Integer.parseInt(nowVote) >= 20) {
-            Post post = postRepository.findById(pId).orElseThrow(() -> new IllegalArgumentException("핫게 등록 실패."));
-            post.gettingHot();
+        try {
+            if (Long.parseLong(nowVote) >= 20) {
+                Post post = postRepository.findById(pId)
+                        .orElseThrow(() -> new IllegalArgumentException("핫게 등록 실패."));
 
-            postRepository.save(post);
+                post.gettingHot();
+                postRepository.save(post);
+            }
+
+            return nowVote;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException();
         }
-
-        return nowVote;
     }
 
 
