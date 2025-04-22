@@ -9,15 +9,13 @@ import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberDetailsResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
-import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
 import hpclab.kcsatspringcommunity.community.service.MemberService;
+import hpclab.kcsatspringcommunity.myBook.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionDto;
-import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,9 +39,8 @@ import java.util.List;
 public class AdminController {
 
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
     private final UserRequestService userRequestService;
-    private final QuestionJPARepository questionJPARepository;
+    private final QuestionService questionService;
     private final JWTUtil jwtUtil;
 
     /**
@@ -75,7 +72,7 @@ public class AdminController {
      */
     @GetMapping("/api/community/admin/members/{mId}")
     public ResponseEntity<MemberDetailsResponseForm> getMemberDetail(@PathVariable Long mId) {
-        Member member = memberRepository.findById(mId).orElseThrow(() -> new UsernameNotFoundException("getMemberDetail: 없는 유저입니다."));
+        Member member = memberService.findMemberById(mId);
         return ResponseEntity.ok(new MemberDetailsResponseForm(member));
     }
 
@@ -87,8 +84,11 @@ public class AdminController {
      */
     @GetMapping("/api/community/admin/members/{mId}/posts")
     public ResponseEntity<List<PostResponseForm>> getMemberDetailPosts(@PathVariable Long mId) {
-        Member member = memberRepository.findById(mId).orElseThrow(() -> new UsernameNotFoundException("getMemberDetailPosts: 없는 유저입니다."));
-        return ResponseEntity.ok(member.getPosts().stream().map(x -> PostResponseForm.builder().post(x).build()).toList());
+        Member member = memberService.findMemberById(mId);
+        return ResponseEntity.ok(member.getPosts().stream()
+                .map(x -> PostResponseForm.builder().post(x).build())
+                .toList()
+        );
     }
 
     /**
@@ -99,8 +99,11 @@ public class AdminController {
      */
     @GetMapping("/api/community/admin/members/{mId}/comments")
     public ResponseEntity<List<CommentResponseForm>> memberDetailComments(@PathVariable Long mId) {
-        Member member = memberRepository.findById(mId).orElseThrow(() -> new UsernameNotFoundException("memberDetailComments: 없는 유저입니다."));
-        return ResponseEntity.ok(member.getComments().stream().map(x -> CommentResponseForm.builder().comment(x).build()).toList());
+        Member member = memberService.findMemberById(mId);
+        return ResponseEntity.ok(member.getComments().stream()
+                .map(x -> CommentResponseForm.builder().comment(x).build())
+                .toList()
+        );
     }
 
     /**
@@ -126,7 +129,7 @@ public class AdminController {
                 .shareCounter(0L)
                 .build();
 
-        Long qId = questionJPARepository.save(question).getId();
+        Long qId = questionService.saveQuestion(question);
 
         return ResponseEntity.ok(userRequestService.updateUserRequestForm(userRequestService.getQuestionErrorForm(qId, userEmail), userEmail));
     }
