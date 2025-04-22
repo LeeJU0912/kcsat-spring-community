@@ -1,5 +1,6 @@
 package hpclab.kcsatspringcommunity.community.service;
 
+import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignUpForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberResponseForm;
 
@@ -31,4 +32,20 @@ public interface MemberService {
      * @return 회원의 별명을 반환합니다.
      */
     String findUsername(String userEmail);
+
+    /**
+     * 회원 email 아이디를 통해 회원 엔티티 객체 Member를 반환하는 메서드입니다.
+     *
+     * @param email 회원 email 아이디
+     * @return 회원 객체 Member를 반환합니다.
+     */
+    Member findMemberByEmail(String email);
+
+    /**
+     * 회원 고유 ID값을 통해 회원 엔티티 객체 Member를 반환하는 메서드입니다.
+     *
+     * @param mId 회원 고유 ID
+     * @return 회원 객체 Member를 반환합니다.
+     */
+    Member findMemberById(Long mId);
 }

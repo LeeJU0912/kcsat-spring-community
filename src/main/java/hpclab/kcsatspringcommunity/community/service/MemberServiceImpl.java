@@ -61,4 +61,14 @@ public class MemberServiceImpl implements MemberService {
     public String findUsername(String userEmail) {
         return redisTemplate.opsForValue().get(userEmail);
     }
+
+    @Override
+    public Member findMemberByEmail(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 계정입니다."));
+    }
+
+    @Override
+    public Member findMemberById(Long mId) {
+        return memberRepository.findById(mId).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 회원입니다."));
+    }
 }
