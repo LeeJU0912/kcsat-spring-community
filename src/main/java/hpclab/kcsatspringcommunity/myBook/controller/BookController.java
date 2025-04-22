@@ -11,6 +11,7 @@ import hpclab.kcsatspringcommunity.question.dto.QuestionDetailsDto;
 import hpclab.kcsatspringcommunity.question.dto.QuestionDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ public class BookController {
     private final BookService bookService;
     private final BookQuestionService bookQuestionService;
     private final QuestionService questionService;
+
     private final JWTUtil jwtUtil;
 
     /**
@@ -36,9 +38,12 @@ public class BookController {
     @GetMapping("/api/community/myBook")
     public ResponseEntity<BookResponseForm> myQuestion(@RequestHeader("Authorization") String token) {
         String userEmail = jwtUtil.getClaims(token).get("userEmail").toString();
-        BookResponseForm book = bookService.findBook(userEmail);
 
-        return ResponseEntity.ok(book);
+        try {
+            return ResponseEntity.ok(new BookResponseForm(bookService.findBook(userEmail)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     /**
@@ -51,7 +56,6 @@ public class BookController {
     @PostMapping("/api/community/question/save")
     public ResponseEntity<String> saveQuestion(@RequestHeader("Authorization") String token, @RequestBody QuestionDto form) {
         String userEmail = jwtUtil.getClaims(token).get("userEmail").toString();
-        log.info(form.toString());
 
         Question question = Question.builder()
                 .type(form.getQuestionType())
@@ -65,9 +69,11 @@ public class BookController {
 
         question.setChoices(form.getChoices().stream().map(Choice::new).toList());
 
-        bookQuestionService.saveFirstQuestion(question, userEmail);
-
-        return ResponseEntity.ok("문제 저장 성공");
+        try {
+            return ResponseEntity.ok(bookQuestionService.saveFirstQuestion(question, userEmail).toString());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
     /**
@@ -78,7 +84,11 @@ public class BookController {
      */
     @GetMapping("/api/community/question")
     public ResponseEntity<QuestionDetailsDto> getQuestionById(@RequestParam Long qId) {
-        Question question = questionService.getQuestion(qId);
-        return ResponseEntity.ok(new QuestionDetailsDto(question));
+        try {
+            Question question = questionService.getQuestion(qId);
+            return ResponseEntity.ok(new QuestionDetailsDto(question));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 }
