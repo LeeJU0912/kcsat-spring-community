@@ -10,13 +10,11 @@ import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
 import hpclab.kcsatspringcommunity.community.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static java.lang.Math.min;
 
@@ -43,8 +41,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Long writeComment(CommentWriteForm commentWriteForm, Long pId, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다."));
-        Post post = postRepository.findById(pId).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 게시물입니다."));
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        Post post = postRepository.findById(pId)
+                .orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 게시물입니다."));
 
         Comment comment = Comment.builder()
                 .content(commentWriteForm.getContent())
@@ -61,19 +61,24 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentResponseForm> getHotComments(Long pId) {
         List<CommentResponseForm> hotComments = new ArrayList<>();
 
-        Post post = postRepository.findByIdWithComments(pId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
+        Post post = postRepository.findByIdWithComments(pId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
 
         List<CommentsSort> commentsSort = new ArrayList<>();
-        for (Comment comment : post.getComment()) {
+        post.getComment().forEach(comment -> {
             String upVote = redisTemplate.opsForValue().get("comment:" + comment.getCId() + ":upVote");
             String downVote = redisTemplate.opsForValue().get("comment:" + comment.getCId() + ":downVote");
 
-            long calc = Long.parseLong(upVote) - Long.parseLong(downVote);
+            try {
+                long calc = Long.parseLong(upVote) - Long.parseLong(downVote);
 
-            if (calc >= 2) {
-                commentsSort.add(new CommentsSort(calc, pId, comment));
+                if (calc >= 2) {
+                    commentsSort.add(new CommentsSort(calc, pId, comment));
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException();
             }
-        }
+        });
 
         Collections.sort(commentsSort);
 
@@ -114,13 +119,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public boolean checkCommentWriter(String email, Long cId) {
-        Comment comment = commentRepository.findCommentWithMember(cId).orElseThrow(() -> new NoSuchElementException("찾을 수 없는 댓글입니다."));
+        Comment comment = commentRepository.findCommentWithMember(cId)
+                .orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 댓글입니다."));
 
-        if (comment.getMember().getEmail().equals(email)) {
-            return true;
-        }
-
-        return false;
+        return comment.getMember().getEmail().equals(email);
     }
 
     @Override
@@ -140,7 +142,7 @@ public class CommentServiceImpl implements CommentService {
         String upVote = "comment:" + cId + ":upVote";
         String user = "comment:" + cId + ":user:" + userEmail;
 
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
+        if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(upVote);
             redisTemplate.opsForValue().set(user, "1");
         }
@@ -155,7 +157,7 @@ public class CommentServiceImpl implements CommentService {
         String downVote = "comment:" + commentId + ":downVote";
         String user = "comment:" + commentId + ":user:" + userEmail;
 
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
+        if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(downVote);
             redisTemplate.opsForValue().set(user, "1");
         }
@@ -165,13 +167,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public String getIncreaseCommentCount(Long commentId) {
-
         return redisTemplate.opsForValue().get("comment:" + commentId + ":upVote");
     }
 
     @Override
     public String getDecreaseCommentCount(Long commentId) {
-
         return redisTemplate.opsForValue().get("comment:" + commentId + ":downVote");
     }
 }
