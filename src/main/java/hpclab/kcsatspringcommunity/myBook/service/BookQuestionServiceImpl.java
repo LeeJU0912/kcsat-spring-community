@@ -19,22 +19,21 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class BookQuestionServiceImpl implements BookQuestionService {
-    private final BookRepository bookRepository;
+
     private final BookQuestionRepository bookQuestionRepository;
-    private final QuestionJPARepository questionJPARepository;
+
+    private final BookService bookService;
+    private final QuestionService questionService;
 
     private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     public Long saveFirstQuestion(Question question, String userEmail) {
 
-        Question savedQuestion = questionJPARepository.save(question);
+        questionService.saveQuestion(question);
+        Book book = bookService.findBook(userEmail);
 
-        log.info("savedQuestion : {}", savedQuestion);
-
-        Book book = bookRepository.findByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException(userEmail));
-
-        bookQuestionRepository.save(new BookQuestion(book, savedQuestion));
+        bookQuestionRepository.save(new BookQuestion(book, question));
 
         return book.getId();
     }
@@ -42,9 +41,8 @@ public class BookQuestionServiceImpl implements BookQuestionService {
     @Override
     public Long saveQuestion(Long qId, String userEmail) {
 
-        Question question = questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 문제입니다."));
-
-        Book book = bookRepository.findByEmail(userEmail).orElseThrow(() -> new UsernameNotFoundException(userEmail));
+        Question question = questionService.getQuestion(qId);
+        Book book = bookService.findBook(userEmail);
 
         if (redisTemplate.opsForValue().get("question:" + userEmail + ":isSaved:" + qId) == null) {
             redisTemplate.opsForValue().set("question:" + userEmail + ":isSaved:" + qId, "1");
