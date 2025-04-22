@@ -12,6 +12,7 @@ import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,26 +30,31 @@ public class UserRequestServiceImpl implements UserRequestService {
 
     private static final String QUESTION_ERROR = "QUESTION_ERROR";
 
+    @Transactional(readOnly = true)
     @Override
     public UserRequestResponseForm getQuestionErrorForm(Long qId, String email) {
         return UserRequestResponseForm.builder()
                 .type(RequestType.QUESTION_ERROR)
                 .content(QUESTION_ERROR)
-                .question(questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("getQuestionErrorForm: 없는 문제입니다.")))
-                .member(memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("getQuestionErrorForm: 없는 사람입니다.")))
+                .question(questionJPARepository.findWithChoicesById(qId)
+                        .orElseThrow(() -> new IllegalArgumentException("getQuestionErrorForm: 없는 문제입니다.")))
+                .member(memberRepository.findByEmail(email)
+                        .orElseThrow(() -> new UsernameNotFoundException("getQuestionErrorForm: 없는 사람입니다.")))
                 .build();
     }
 
-
+    @Transactional(readOnly = true)
     @Override
     public UserRequestResponseForm getImprovingForm(UserRequestRequestForm form, String email) {
         return UserRequestResponseForm.builder()
                 .type(RequestType.IMPROVING)
                 .content(form.getContent())
-                .member(memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("getImprovingForm: 없는 사람입니다.")))
+                .member(memberRepository.findByEmail(email)
+                        .orElseThrow(() -> new UsernameNotFoundException("getImprovingForm: 없는 사람입니다.")))
                 .build();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserRequestResponseForm getETCForm(UserRequestRequestForm form, String email) {
         return UserRequestResponseForm.builder()
@@ -58,6 +64,7 @@ public class UserRequestServiceImpl implements UserRequestService {
                 .build();
     }
 
+    @Transactional
     @Override
     public UserRequestResponseForm updateUserRequestForm(UserRequestResponseForm form, String email) {
 
@@ -81,6 +88,7 @@ public class UserRequestServiceImpl implements UserRequestService {
         return form;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserRequestResponseForm> getUserRequests() {
         List<UserRequest> requests = userRequestRepository.findAll();
