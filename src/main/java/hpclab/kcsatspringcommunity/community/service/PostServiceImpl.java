@@ -8,7 +8,7 @@ import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostWriteForm;
 import hpclab.kcsatspringcommunity.community.repository.PostRepository;
 import hpclab.kcsatspringcommunity.myBook.service.BookQuestionService;
-import hpclab.kcsatspringcommunity.myBook.service.QuestionService;
+import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.domain.QuestionType;
 import lombok.RequiredArgsConstructor;

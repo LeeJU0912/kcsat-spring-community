@@ -10,7 +10,7 @@ import hpclab.kcsatspringcommunity.community.dto.MemberDetailsResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.service.MemberService;
-import hpclab.kcsatspringcommunity.myBook.service.QuestionService;
+import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionDto;

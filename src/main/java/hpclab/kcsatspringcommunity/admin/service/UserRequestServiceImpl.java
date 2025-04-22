@@ -7,12 +7,9 @@ import hpclab.kcsatspringcommunity.admin.dto.UserRequestRequestForm;
 import hpclab.kcsatspringcommunity.admin.dto.UserRequestResponseForm;
 import hpclab.kcsatspringcommunity.admin.repository.UserRequestRepository;
 import hpclab.kcsatspringcommunity.community.domain.Member;
-import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
 import hpclab.kcsatspringcommunity.community.service.MemberService;
-import hpclab.kcsatspringcommunity.myBook.service.QuestionService;
-import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
+import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

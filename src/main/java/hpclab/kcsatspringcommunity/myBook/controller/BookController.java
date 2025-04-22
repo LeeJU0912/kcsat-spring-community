@@ -4,7 +4,7 @@ import hpclab.kcsatspringcommunity.JWTUtil;
 import hpclab.kcsatspringcommunity.myBook.dto.BookResponseForm;
 import hpclab.kcsatspringcommunity.myBook.service.BookQuestionService;
 import hpclab.kcsatspringcommunity.myBook.service.BookService;
-import hpclab.kcsatspringcommunity.myBook.service.QuestionService;
+import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionDetailsDto;

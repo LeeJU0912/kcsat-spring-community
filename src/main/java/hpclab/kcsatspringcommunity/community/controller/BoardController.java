@@ -6,7 +6,7 @@ import hpclab.kcsatspringcommunity.community.service.CommentService;
 import hpclab.kcsatspringcommunity.community.service.PostService;
 import hpclab.kcsatspringcommunity.myBook.dto.BookResponseForm;
 import hpclab.kcsatspringcommunity.myBook.service.BookService;
-import hpclab.kcsatspringcommunity.myBook.service.QuestionService;
+import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.domain.QuestionType;
@@ -337,12 +337,10 @@ public class BoardController {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
-            postService.saveQuestionFromPost(qId, userEmail);
+            return ResponseEntity.ok(postService.saveQuestionFromPost(qId, userEmail).toString());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("error");
         }
-
-        return ResponseEntity.ok("ok");
     }
 
     /**
@@ -356,7 +354,7 @@ public class BoardController {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
-            return ResponseEntity.ok(bookService.findBook(userEmail));
+            return ResponseEntity.ok(new BookResponseForm(bookService.findBook(userEmail)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -402,9 +400,8 @@ public class BoardController {
 
         try {
             Long cId = commentService.writeComment(form, pId, userEmail);
-            commentService.setCommentCount(cId);
 
-            return ResponseEntity.ok("ok");
+            return ResponseEntity.ok(commentService.setCommentCount(cId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
