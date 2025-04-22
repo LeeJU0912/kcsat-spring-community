@@ -62,7 +62,7 @@ public class JWTFilter extends OncePerRequestFilter {
         // Token에서 Claims 꺼내기
         Claims claims = jwtUtil.getClaims(authorization);
 
-        // Token Expired 되었는지 여부  || userService.isTokenBlacklisted(authorization)
+        // Token Expired 되었는지 여부 || userService.isTokenBlacklisted(authorization)
         if (claims.getExpiration().before(new Date())) {
             logger.error("Token 이 만료되었습니다.");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -71,11 +71,6 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        /**
-         * (수정 필요)
-         * 회원 email 아이디를 JWT에 저장하면 보안상 큰 문제 발생 여지가 있음.
-         * Redis에 회원키:email 아이디 이런 형태로 매핑하여 저장하는 로직 도입 필요.
-         */
         // 회원 email 아이디와 권한을 Token에서 꺼내기
         String userEmail = claims.get("userEmail", String.class);
         String role = claims.get("role", String.class);
