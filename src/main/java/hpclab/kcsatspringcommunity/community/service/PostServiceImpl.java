@@ -6,12 +6,11 @@ import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostWriteForm;
-import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
 import hpclab.kcsatspringcommunity.community.repository.PostRepository;
 import hpclab.kcsatspringcommunity.myBook.service.BookQuestionService;
+import hpclab.kcsatspringcommunity.myBook.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.domain.QuestionType;
-import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,7 +20,6 @@ import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +33,9 @@ import java.util.List;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
-    private final MemberRepository memberRepository;
-    private final QuestionJPARepository questionJPARepository;
+
+    private final MemberService memberService;
+    private final QuestionService questionService;
     private final BookQuestionService bookQuestionService;
 
     private final RedisTemplate<String, String> redisTemplate;
@@ -45,7 +44,7 @@ public class PostServiceImpl implements PostService {
     // 게시글 저장
     @Override
     public Long savePost(PostWriteForm postWriteForm, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("이메일이 존재하지 않습니다."));
+        Member member = memberService.findMemberByEmail(email);
         Post result;
 
         if (postWriteForm.getQId() == null) {
@@ -56,7 +55,7 @@ public class PostServiceImpl implements PostService {
                     .build();
         }
         else {
-            Question question = questionJPARepository.findWithChoicesById(postWriteForm.getQId()).orElseThrow(() -> new IllegalArgumentException("질문이 존재하지 않습니다."));
+            Question question = questionService.getQuestion(postWriteForm.getQId());
 
             result = Post.builder()
                     .postTitle(postWriteForm.getTitle())
@@ -75,12 +74,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public boolean saveQuestionFromPost(Long qId, String userEmail) {
-        Question question = questionJPARepository.findWithChoicesById(qId).orElseThrow(() -> new IllegalArgumentException("question not found"));
+    public Long saveQuestionFromPost(Long qId, String userEmail) {
+        Question question = questionService.getQuestion(qId);
         bookQuestionService.saveQuestion(qId, userEmail);
-        questionJPARepository.save(question);
+        questionService.saveQuestion(question);
 
-        return true;
+        return qId;
     }
 
     @Override
@@ -161,7 +160,7 @@ public class PostServiceImpl implements PostService {
 
         String user = "post:userView:" + pId + ":" + userEmail;
 
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
+        if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(viewCount);
             redisTemplate.opsForValue().set(user, "1");
         }
@@ -180,7 +179,7 @@ public class PostServiceImpl implements PostService {
         String upVote = "post:upVote:" + pId;
         String user = "post:userVote:" + pId + ":" + userEmail;
 
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
+        if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(upVote);
             redisTemplate.opsForValue().set(user, "1");
         }
@@ -204,7 +203,7 @@ public class PostServiceImpl implements PostService {
         String downVote = "post:downVote:" + pId;
         String user = "post:userVote:" + pId + ":" + userEmail;
 
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(user))) {
+        if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(downVote);
             redisTemplate.opsForValue().set(user, "1");
         }
