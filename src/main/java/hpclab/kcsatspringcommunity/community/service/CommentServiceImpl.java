@@ -3,7 +3,6 @@ package hpclab.kcsatspringcommunity.community.service;
 import hpclab.kcsatspringcommunity.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.community.domain.Comment;
 import hpclab.kcsatspringcommunity.community.domain.Member;
-import hpclab.kcsatspringcommunity.community.domain.Post;
 import hpclab.kcsatspringcommunity.community.dto.CommentDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentWriteForm;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 

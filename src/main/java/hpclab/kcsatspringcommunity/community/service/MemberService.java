@@ -1,8 +1,8 @@
 package hpclab.kcsatspringcommunity.community.service;
 
 import hpclab.kcsatspringcommunity.community.domain.Member;
-import hpclab.kcsatspringcommunity.community.dto.MemberSignUpForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberResponseForm;
+import hpclab.kcsatspringcommunity.community.dto.MemberSignUpForm;
 
 import java.util.List;
 

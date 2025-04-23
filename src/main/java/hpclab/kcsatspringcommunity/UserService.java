@@ -5,7 +5,6 @@ import hpclab.kcsatspringcommunity.community.domain.Role;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignInForm;
 import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
 import hpclab.kcsatspringcommunity.exception.ApiException;
-import hpclab.kcsatspringcommunity.exception.ApiResponse;
 import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

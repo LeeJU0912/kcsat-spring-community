@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
 
 /**
  * 회원 커뮤니티 게시판의 게시글 정보를 담은 엔티티 객체입니다.

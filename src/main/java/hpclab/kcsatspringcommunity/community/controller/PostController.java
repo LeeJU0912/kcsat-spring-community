@@ -2,16 +2,13 @@ package hpclab.kcsatspringcommunity.community.controller;
 
 import hpclab.kcsatspringcommunity.JWTUtil;
 import hpclab.kcsatspringcommunity.community.dto.*;
-import hpclab.kcsatspringcommunity.community.service.CommentService;
 import hpclab.kcsatspringcommunity.community.service.PostService;
 import hpclab.kcsatspringcommunity.exception.ApiException;
 import hpclab.kcsatspringcommunity.exception.ApiResponse;
 import hpclab.kcsatspringcommunity.exception.ErrorCode;
-import hpclab.kcsatspringcommunity.exception.SuccessCode;
 import hpclab.kcsatspringcommunity.myBook.dto.BookResponseForm;
 import hpclab.kcsatspringcommunity.myBook.service.BookService;
 import hpclab.kcsatspringcommunity.question.service.QuestionService;
-import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.domain.QuestionType;
 import hpclab.kcsatspringcommunity.question.dto.QuestionResponseForm;
@@ -22,12 +19,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
 import static hpclab.kcsatspringcommunity.exception.SuccessCode.POST_DELETE_SUCCESS;

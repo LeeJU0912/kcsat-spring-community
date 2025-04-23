@@ -7,7 +7,6 @@ import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionResponseForm;
 import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
-import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;

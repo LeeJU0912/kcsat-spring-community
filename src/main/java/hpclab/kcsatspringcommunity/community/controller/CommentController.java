@@ -5,11 +5,9 @@ import hpclab.kcsatspringcommunity.community.dto.CommentDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentWriteForm;
 import hpclab.kcsatspringcommunity.community.service.CommentService;
 import hpclab.kcsatspringcommunity.exception.ApiResponse;
-import hpclab.kcsatspringcommunity.exception.SuccessCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
