@@ -42,6 +42,7 @@ public class PostServiceImpl implements PostService {
 
 
     // 게시글 저장
+    @Transactional
     @Override
     public Long savePost(PostWriteForm postWriteForm, String email) {
         Member member = memberService.findMemberByEmail(email);
@@ -73,6 +74,7 @@ public class PostServiceImpl implements PostService {
         return result.getPId();
     }
 
+    @Transactional
     @Override
     public Long saveQuestionFromPost(Long qId, String userEmail) {
         Question question = questionService.getQuestion(qId);
@@ -82,24 +84,28 @@ public class PostServiceImpl implements PostService {
         return qId;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<PostResponseForm> getPostList(Pageable pageable) {
         Page<Post> posts = postRepository.findAll(pageable);
         return makePostPageDTO(pageable, posts);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<PostResponseForm> getFindPostList(Pageable pageable, String keyword, QuestionType type) {
         Page<Post> posts = postRepository.findPostsByQuestionTypeAndTitle(pageable, keyword, type);
         return makePostPageDTO(pageable, posts);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<PostResponseForm> getHotPostList(Pageable pageable) {
         Page<Post> hotPosts = postRepository.findHotPosts(pageable);
         return makePostPageDTO(pageable, hotPosts);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Page<PostResponseForm> getFindHotPostList(Pageable pageable, String keyword, QuestionType type) {
         Page<Post> posts = postRepository.findHotPostsByQuestionTypeAndTitle(pageable, keyword, type);
@@ -114,6 +120,7 @@ public class PostServiceImpl implements PostService {
         return new PageImpl<>(postResponseForm, pageable, posts.getTotalElements());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PostDetailForm getPost(Long pId) {
         Post post = postRepository.findByIdWithComments(pId)
@@ -125,6 +132,7 @@ public class PostServiceImpl implements PostService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public PostDetailForm updatePost(Long pId, PostWriteForm postWriteForm) {
         Post post = postRepository.findById(pId)
@@ -137,6 +145,7 @@ public class PostServiceImpl implements PostService {
                 .build();
     }
 
+    @Transactional
     @Override
     public void removePost(Long pId) {
         Post post = postRepository.findById(pId)
@@ -176,6 +185,7 @@ public class PostServiceImpl implements PostService {
         return redisTemplate.opsForValue().get("post:viewCount:" + pId);
     }
 
+    @Transactional
     @Override
     public String increasePostVoteCount(Long pId, String userEmail) {
 

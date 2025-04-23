@@ -35,8 +35,6 @@ public class JWTFilter extends OncePerRequestFilter {
         // HTTP 헤더의 AUTHORIZATION 항목 추출
         final String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        logger.info("authorization = " + authorization);
-
         // Options Preflight 요청인 경우, 필터 생략
         if (request.getMethod().equals(HttpMethod.OPTIONS.name())) {
             filterChain.doFilter(request, response);
@@ -54,7 +52,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 인증 결과가 없으면, 필터 생략
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            logger.error("authorization 이 없습니다.");
             filterChain.doFilter(request, response);
             return;
         }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 문제를 나만의 문제집에 저장하는 로직을 구현한 클래스입니다.
@@ -25,6 +26,7 @@ public class BookQuestionServiceImpl implements BookQuestionService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
+    @Transactional
     @Override
     public Long saveFirstQuestion(Question question, String userEmail) {
 
@@ -36,6 +38,7 @@ public class BookQuestionServiceImpl implements BookQuestionService {
         return book.getId();
     }
 
+    @Transactional
     @Override
     public Long saveQuestion(Long qId, String userEmail) {
 

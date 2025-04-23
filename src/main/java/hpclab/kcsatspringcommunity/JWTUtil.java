@@ -24,11 +24,16 @@ public class JWTUtil {
     private static String secretKey;
     private static final SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey));
 
+    public static final String AUTHORIZATION = "Authorization";
+    public static final String USER_EMAIL = "userEmail";
+    public static final String USER_NAME = "userName";
+    public static final String ROLE = "role";
+
     public String generateToken(String userEmail, String userName, Role role) {
         return Jwts.builder()
-                .claim("userEmail", userEmail)
-                .claim("userName", userName)
-                .claim("role", role)
+                .claim(USER_EMAIL, userEmail)
+                .claim(USER_NAME, userName)
+                .claim(ROLE, role)
                 .id(UUID.randomUUID().toString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))

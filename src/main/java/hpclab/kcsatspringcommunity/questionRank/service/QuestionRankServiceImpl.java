@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -26,6 +27,7 @@ public class QuestionRankServiceImpl implements QuestionRankService {
     private final RedisTemplate<String, String> redisTemplate;
     private final QuestionJPARepository questionJPARepository;
 
+    @Transactional(readOnly = true)
     @Override
     public List<QuestionResponseForm> getRankedQuestions() {
         List<QuestionResponseForm> questions = new ArrayList<>();
@@ -55,9 +57,9 @@ public class QuestionRankServiceImpl implements QuestionRankService {
         return questions;
     }
 
-
-    @Override
     @Scheduled(cron = "0 0 0 ? * MON", zone = "Asia/Seoul")
+    @Transactional(readOnly = true)
+    @Override
     public void updateQuestionRank() {
         log.info("cron update question rank");
 

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
+    @Transactional
     @Override
     public void signUp(MemberSignUpForm memberSignUpForm) {
         if (memberRepository.existsByEmail(memberSignUpForm.getEmail())) {
@@ -47,6 +49,7 @@ public class MemberServiceImpl implements MemberService {
         bookService.makeBook(member.getEmail());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<MemberResponseForm> findMembers() {
         List<Member> all = memberRepository.findAll();
@@ -62,11 +65,13 @@ public class MemberServiceImpl implements MemberService {
         return redisTemplate.opsForValue().get(userEmail);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Member findMemberByEmail(String email) {
         return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 계정입니다."));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Member findMemberById(Long mId) {
         return memberRepository.findById(mId).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 회원입니다."));

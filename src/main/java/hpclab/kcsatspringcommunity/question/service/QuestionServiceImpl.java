@@ -4,6 +4,7 @@ import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 문제 관련 로직을 구현한 클래스입니다.
@@ -13,12 +14,14 @@ import org.springframework.stereotype.Service;
 public class QuestionServiceImpl implements QuestionService {
     private final QuestionJPARepository questionJPARepository;
 
+    @Transactional(readOnly = true)
     @Override
     public Question getQuestion(Long qId) {
         return questionJPARepository.findWithChoicesById(qId)
                 .orElseThrow(() -> new IllegalArgumentException("Question not found"));
     }
 
+    @Transactional
     @Override
     public Long saveQuestion(Question question) {
         return questionJPARepository.save(question).getId();

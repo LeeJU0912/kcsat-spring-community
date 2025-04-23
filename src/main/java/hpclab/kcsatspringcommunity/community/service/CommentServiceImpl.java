@@ -11,6 +11,7 @@ import hpclab.kcsatspringcommunity.community.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +40,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
+    @Transactional
     @Override
     public Long writeComment(CommentWriteForm commentWriteForm, Long pId, String email) {
         Member member = memberRepository.findByEmail(email)
@@ -57,6 +59,7 @@ public class CommentServiceImpl implements CommentService {
         return comment.getCId();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<CommentResponseForm> getHotComments(Long pId) {
         List<CommentResponseForm> hotComments = new ArrayList<>();
@@ -112,11 +115,13 @@ public class CommentServiceImpl implements CommentService {
         }
     }
 
+    @Transactional
     @Override
     public void deleteComment(Long cId) {
         commentRepository.deleteById(cId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public boolean checkCommentWriter(String email, Long cId) {
         Comment comment = commentRepository.findCommentWithMember(cId)

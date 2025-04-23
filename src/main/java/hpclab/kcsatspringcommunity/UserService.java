@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +32,7 @@ public class UserService {
      * @param form 로그인 포맷
      * @return JWT 토큰 발급
      */
+    @Transactional(readOnly = true)
     public String login(MemberSignInForm form) {
         Member member = memberRepository.findByEmail(form.getUserEmail()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
