@@ -28,12 +28,13 @@ public class Member extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "MEMBER_ID")
+    @Column(name = "member_id")
     private Long mID;
 
     /**
      * 회원의 권한을 나타냅니다. 자세한 사항은 Role 참조.
      */
+    @Column(name = "member_role", nullable = false)
     private Role role;
 
     /**
@@ -42,7 +43,7 @@ public class Member extends BaseTimeEntity {
      */
     @NotBlank(message = "이메일을 입력해주세요.")
     @Email(message = "올바른 이메일을 입력해주세요.")
-    @Column(nullable = false, unique = true)
+    @Column(name = "member_email", nullable = false, unique = true)
     private String email;
 
     /**
@@ -51,13 +52,14 @@ public class Member extends BaseTimeEntity {
      */
     @NotBlank(message = "닉네임을 입력해주세요.")
     @Size(min = 2, max = 12, message = "닉네임은 2 ~ 12자 사이로 입력해주세요.")
+    @Column(name = "member_name", nullable = false, unique = true)
     private String username;
 
     /**
      * 회원 비밀번호를 저장합니다.
      */
     @NotBlank(message = "비밀번호를 입력해주세요.")
-    @Column(name = "MEMBER_PW", nullable = false)
+    @Column(name = "member_password", nullable = false)
     private String password;
 
     /**

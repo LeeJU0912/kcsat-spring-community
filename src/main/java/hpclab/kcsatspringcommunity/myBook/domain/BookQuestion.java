@@ -23,20 +23,21 @@ public class BookQuestion extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "book_question_id")
     private Long id;
 
     /**
      * 나만의 문제집
      */
     @ManyToOne
-    @JoinColumn(name = "BOOK_ID")
+    @JoinColumn(name = "book_id")
     private Book book;
 
     /**
      * 생성된 문제
      */
     @ManyToOne
-    @JoinColumn(name = "QUESTION_ID")
+    @JoinColumn(name = "question_id")
     private Question question;
 
     public BookQuestion(Book book, Question question) {

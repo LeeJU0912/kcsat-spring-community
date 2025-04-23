@@ -26,50 +26,45 @@ public class Post extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "POST_ID")
+    @Column(name = "post_id")
     private Long pId;
 
     /**
      * 게시글 제목입니다.
      */
-    @Column(nullable = false)
+    @Column(name = "post_title", nullable = false)
     private String postTitle;
 
     /**
      * 게시글 본문입니다.
      */
-    @Column(nullable = false)
+    @Column(name = "post_content", nullable = false)
     private String postContent;
 
     /**
      * 게시글 작성자 정보입니다. 게시글:작성자 다대일 매칭 관계입니다.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "MEMBER_ID")
+    @JoinColumn(name = "member_id")
     private Member member;
-
-    /**
-     * 게시글에 달린 댓글 모음입니다. 게시글:댓글 일대다 매칭 관계입니다.
-     * 게시글을 지우면, 관련 댓글도 모두 자동으로 삭제됩니다.
-     */
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comment;
 
     /**
      * 게시글에 첨부한 문제 유형을 나타냅니다. 자세한 사항은 QuestionType 참조.
      */
+    @Column(name = "post_question_type")
     private QuestionType questionType;
 
     /**
      * 인기 게시글 여부를 나타냅니다. 인기 게시글이라면 HOT 게시판에서도 확인이 가능합니다.
      */
+    @Column(name = "post_hot", nullable = false)
     private Boolean isHotPost;
 
     /**
      * 게시글에 첨부된 문제를 나타냅니다. 게시글:문제 다대일 매칭 관계입니다.
      */
     @ManyToOne
-    @JoinColumn(name = "QUESTION_ID")
+    @JoinColumn(name = "question_id")
     private Question question;
 
     /**

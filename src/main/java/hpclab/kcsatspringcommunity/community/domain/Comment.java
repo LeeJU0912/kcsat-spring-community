@@ -22,26 +22,23 @@ public class Comment extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "COMMENT_ID")
+    @Column(name = "comment_id")
     private Long cId;
+
+
+    @Column(name = "post_id", nullable = false)
+    private Long pId;
 
     /**
      * 댓글 내용입니다.
      */
-    @Column(nullable = false)
+    @Column(name = "comment_content", nullable = false)
     private String content;
-
-    /**
-     * 댓글이 달린 게시글 객체입니다. 댓글:게시글 다대일 관계입니다.
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "POST_ID")
-    private Post post;
 
     /**
      * 댓글을 작성한 회원 객체입니다. 댓글:회원 다대일 관계입니다.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "MEMBER_ID")
+    @JoinColumn(name = "member_id")
     private Member member;
 }

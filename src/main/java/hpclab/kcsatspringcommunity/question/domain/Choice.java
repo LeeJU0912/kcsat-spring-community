@@ -1,5 +1,6 @@
 package hpclab.kcsatspringcommunity.question.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -24,11 +25,13 @@ public class Choice {
      */
     @Id
     @GeneratedValue
+    @Column(name = "choice_id")
     private Long id;
 
     /**
      * 보기 항목
      */
+    @Column(nullable = false)
     private String choice;
 
     public Choice(String choice) {
