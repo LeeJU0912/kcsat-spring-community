@@ -15,6 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static hpclab.kcsatspringcommunity.JWTUtil.AUTHORIZATION;
+import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
+
 /**
  * 나만의 문제를 저장하는 MyBook 관련 컨트롤러 메서드입니다.
  */
@@ -36,8 +39,8 @@ public class BookController {
      * @return MyBook 상세 정보를 반환합니다.
      */
     @GetMapping("/api/community/myBook")
-    public ResponseEntity<BookResponseForm> myQuestion(@RequestHeader("Authorization") String token) {
-        String userEmail = jwtUtil.getClaims(token).get("userEmail").toString();
+    public ResponseEntity<BookResponseForm> myQuestion(@RequestHeader(AUTHORIZATION) String token) {
+        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
             return ResponseEntity.ok(new BookResponseForm(bookService.findBook(userEmail)));
@@ -54,8 +57,8 @@ public class BookController {
      * @return 문제 저장에 성공하면 OK로 응답합니다.
      */
     @PostMapping("/api/community/question/save")
-    public ResponseEntity<String> saveQuestion(@RequestHeader("Authorization") String token, @RequestBody QuestionDto form) {
-        String userEmail = jwtUtil.getClaims(token).get("userEmail").toString();
+    public ResponseEntity<String> saveQuestion(@RequestHeader(AUTHORIZATION) String token, @RequestBody QuestionDto form) {
+        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         Question question = Question.builder()
                 .type(form.getQuestionType())

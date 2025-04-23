@@ -28,9 +28,7 @@ public class QuestionRankController {
      */
     @GetMapping("/api/community/open/weekly")
     public ResponseEntity<List<QuestionResponseForm>> weeklyQuestionRank() {
-        log.info("weekly question rank");
 
-        // weekly Question 5개 랭킹 순서대로 가져 와서 모델에 넣기.
         try {
             return ResponseEntity.ok(questionRankService.getRankedQuestions());
         } catch (IllegalArgumentException e) {

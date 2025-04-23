@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static hpclab.kcsatspringcommunity.JWTUtil.AUTHORIZATION;
+import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
+
 /**
  * <p>이 클래스는 관리자 페이지 컨트롤러 클래스입니다.</p>
  * <p>관리자 전용 기능을 구현한 페이지입니다.</p>
@@ -114,8 +117,8 @@ public class AdminController {
      * @return 보낸 문제에 대한 신고자, 문제 세부 사항 등 결과 객체
      */
     @PostMapping("/api/community/result/junk")
-    public ResponseEntity<UserRequestResponseForm> filterQuestion(@RequestHeader("Authorization") String token, @RequestBody QuestionDto form) {
-        String userEmail = jwtUtil.getClaims(token).get("userEmail").toString();
+    public ResponseEntity<UserRequestResponseForm> filterQuestion(@RequestHeader(AUTHORIZATION) String token, @RequestBody QuestionDto form) {
+        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         Question question = Question
                 .builder()
@@ -142,8 +145,8 @@ public class AdminController {
      * @return 보낸 문제에 대한 신고자, 문제 세부 사항 등 결과 객체
      */
     @PostMapping("/api/community/improving")
-    public ResponseEntity<UserRequestResponseForm> requestImproving(@RequestHeader("Authorization") String token, @RequestBody UserRequestRequestForm form) {
-        String userEmail = jwtUtil.getClaims(token).get("userEmail").toString();
+    public ResponseEntity<UserRequestResponseForm> requestImproving(@RequestHeader(AUTHORIZATION) String token, @RequestBody UserRequestRequestForm form) {
+        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         return ResponseEntity.ok(userRequestService.updateUserRequestForm(userRequestService.getImprovingForm(form, userEmail), userEmail));
     }
