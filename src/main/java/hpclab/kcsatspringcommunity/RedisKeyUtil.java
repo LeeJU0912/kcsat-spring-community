@@ -15,6 +15,10 @@ public class RedisKeyUtil {
         return "comment:" + cId + ":user:" + email;
     }
 
+    public static String commentIdemCheck(Long mId, String hash) {
+        return "comment:lock:" + mId + ":" + hash;
+    }
+
     // 게시글 관련 키
     public static String postViewCount(Long pId) {
         return "post:viewCount:" + pId;
@@ -32,6 +36,10 @@ public class RedisKeyUtil {
         return "post:userView:" + pId + ":" + email;
     }
 
+    public static String postIdemCheck(Long mId, String hash) {
+        return "post:lock:" + mId + ":" + hash;
+    }
+
     // 문제 관련 키
     public static String questionSavedCheck(String email, Long qId) {
         return "question:" + email + ":isSaved:" + qId;
@@ -43,4 +51,9 @@ public class RedisKeyUtil {
 
     //JWT 관련 키
 
+
+    // 회원 관련 키
+    public static String userIdemCheck(String email) {
+        return "signup:lock:" + email;
+    }
 }

@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,8 +48,17 @@ public class PostServiceImpl implements PostService {
     @Override
     public Long savePost(PostWriteForm postWriteForm, String email) {
         Member member = memberService.findMemberByEmail(email);
-        Post result;
 
+        String titleHash = Integer.toHexString(postWriteForm.getTitle().hashCode());
+        String redisKey = RedisKeyUtil.postIdemCheck(member.getMID(), titleHash);
+
+        Boolean success = redisTemplate.opsForValue()
+                .setIfAbsent(redisKey, "locked", Duration.ofMinutes(1));
+        if (Boolean.FALSE.equals(success)) {
+            throw new ApiException(ErrorCode.DUPLICATE_POST);
+        }
+
+        Post result;
         if (postWriteForm.getQId() == null) {
             result = Post.builder()
                     .postTitle(postWriteForm.getTitle())
@@ -78,6 +88,16 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public Long saveQuestionFromPost(Long qId, String userEmail) {
+
+        String redisKey = RedisKeyUtil.commentIdemCheck(qId, userEmail);
+
+        Boolean success = redisTemplate.opsForValue()
+                .setIfAbsent(redisKey, "locked", Duration.ofMinutes(1));
+
+        if (Boolean.FALSE.equals(success)) {
+            throw new ApiException(ErrorCode.DUPLICATE_QUESTION_SAVE);
+        }
+
         Question question = questionService.getQuestion(qId);
         bookQuestionService.saveQuestion(qId, userEmail);
         questionService.saveQuestion(question);
@@ -163,15 +183,16 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public String increasePostViewCount(Long pId, String userEmail) {
-        String viewCount = RedisKeyUtil.postViewCount(pId);
-        String user = RedisKeyUtil.postUserCheck(pId, userEmail);
 
-        if (!redisTemplate.hasKey(user)) {
-            redisTemplate.opsForValue().increment(viewCount);
-            redisTemplate.opsForValue().set(user, "1");
+        String viewCountKey = RedisKeyUtil.postViewCount(pId);
+        String userViewKey = RedisKeyUtil.postUserCheck(pId, userEmail);
+
+        if (!redisTemplate.hasKey(userViewKey)) {
+            redisTemplate.opsForValue().increment(viewCountKey);
+            redisTemplate.opsForValue().set(userViewKey, "1", Duration.ofHours(24));
         }
 
-        return redisTemplate.opsForValue().get(viewCount);
+        return redisTemplate.opsForValue().get(viewCountKey);
     }
 
     @Override
@@ -183,18 +204,20 @@ public class PostServiceImpl implements PostService {
     @Override
     public String increasePostVoteCount(Long pId, String userEmail) {
 
-        String upVote = RedisKeyUtil.postUpVote(pId);
-        String user = RedisKeyUtil.postUserCheck(pId, userEmail);
+        String upVoteKey = RedisKeyUtil.postUpVote(pId);
+        String userVoteKey = RedisKeyUtil.postUserCheck(pId, userEmail);
 
-        if (!redisTemplate.hasKey(user)) {
-            redisTemplate.opsForValue().increment(upVote);
-            redisTemplate.opsForValue().set(user, "1");
+        Boolean success = redisTemplate.opsForValue()
+                .setIfAbsent(userVoteKey, "1", Duration.ofHours(24));
+
+        if (Boolean.TRUE.equals(success)) {
+            redisTemplate.opsForValue().increment(upVoteKey);
         }
 
-        String nowVote = redisTemplate.opsForValue().get(upVote);
+        String nowVote = redisTemplate.opsForValue().get(upVoteKey);
 
         try {
-            if (Long.parseLong(nowVote) >= 20) {
+            if (nowVote != null && Long.parseLong(nowVote) >= 20) {
                 Post post = postRepository.findById(pId)
                         .orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
 
@@ -204,7 +227,7 @@ public class PostServiceImpl implements PostService {
 
             return nowVote;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException();
+            throw new ApiException(ErrorCode.VOTE_COUNT_PARSE_FAILED);
         }
     }
 
@@ -212,15 +235,17 @@ public class PostServiceImpl implements PostService {
     @Override
     public String decreasePostVoteCount(Long pId, String userEmail) {
 
-        String downVote = RedisKeyUtil.postDownVote(pId);
-        String user = RedisKeyUtil.postUserCheck(pId, userEmail);
+        String downVoteKey = RedisKeyUtil.postDownVote(pId);
+        String userVoteKey = RedisKeyUtil.postUserCheck(pId, userEmail);
 
-        if (!redisTemplate.hasKey(user)) {
-            redisTemplate.opsForValue().increment(downVote);
-            redisTemplate.opsForValue().set(user, "1");
+        Boolean success = redisTemplate.opsForValue()
+                .setIfAbsent(userVoteKey, "1", Duration.ofHours(24));
+
+        if (Boolean.TRUE.equals(success)) {
+            redisTemplate.opsForValue().increment(downVoteKey);
         }
 
-        return redisTemplate.opsForValue().get(downVote);
+        return redisTemplate.opsForValue().get(downVoteKey);
     }
 
     @Override
@@ -234,34 +259,34 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    /**
-     * 회원의 게시글 조회 여부를 초기화하는 함수.
-     * 1000개 단위로 불러와서, 100개씩 한 번에 삭제하는 batch 처리.
-     */
-    @Override
-    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul") // 매일 자정에 실행
-    public void resetPostView() {
-        log.info("cron reset post userViewChk");
-
-        ScanOptions scanOptions = ScanOptions.scanOptions()
-                .match("post:userView:*")
-                .count(1000)
-                .build();
-
-        Cursor<byte[]> keys = redisTemplate.getConnectionFactory().getConnection().scan(scanOptions);
-
-        // 1000개씩 읽어서, 100번 읽으면 반영. 그 전에 이미 다 읽으면 그 값을 전부 반영.
-        List<String> batchKeys = new ArrayList<>();
-        while(keys.hasNext()) {
-            batchKeys.add(new String(keys.next()));
-            if (batchKeys.size() >= 100) {
-                redisTemplate.delete(batchKeys);
-                batchKeys.clear();
-            }
-        }
-
-        if (!batchKeys.isEmpty()) {
-            redisTemplate.delete(batchKeys);
-        }
-    }
+//    /**
+//     * 회원의 게시글 조회 여부를 초기화하는 함수.
+//     * 1000개 단위로 불러와서, 100개씩 한 번에 삭제하는 batch 처리.
+//     */
+//    @Override
+//    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul") // 매일 자정에 실행
+//    public void resetPostView() {
+//        log.info("cron reset post userViewChk");
+//
+//        ScanOptions scanOptions = ScanOptions.scanOptions()
+//                .match("post:userView:*")
+//                .count(1000)
+//                .build();
+//
+//        Cursor<byte[]> keys = redisTemplate.getConnectionFactory().getConnection().scan(scanOptions);
+//
+//        // 1000개씩 읽어서, 100번 읽으면 반영. 그 전에 이미 다 읽으면 그 값을 전부 반영.
+//        List<String> batchKeys = new ArrayList<>();
+//        while(keys.hasNext()) {
+//            batchKeys.add(new String(keys.next()));
+//            if (batchKeys.size() >= 100) {
+//                redisTemplate.delete(batchKeys);
+//                batchKeys.clear();
+//            }
+//        }
+//
+//        if (!batchKeys.isEmpty()) {
+//            redisTemplate.delete(batchKeys);
+//        }
+//    }
 }

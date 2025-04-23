@@ -15,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,6 +48,16 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Long writeComment(CommentWriteForm commentWriteForm, Long pId, String email) {
         Member member = memberService.findMemberByEmail(email);
+
+        String hexString = Integer.toHexString(commentWriteForm.getContent().hashCode());
+
+        String redisKey = RedisKeyUtil.commentIdemCheck(member.getMID(), hexString);
+
+        Boolean locked = redisTemplate.opsForValue().setIfAbsent(redisKey, "locked", Duration.ofMinutes(1));
+
+        if (Boolean.FALSE.equals(locked)) {
+            throw new ApiException(ErrorCode.DUPLICATE_COMMENT);
+        }
 
         Comment comment = Comment.builder()
                 .content(commentWriteForm.getContent())
@@ -179,30 +190,34 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public String increaseCommentCount(Long cId, String userEmail) {
 
-        String upVote = RedisKeyUtil.commentUpVote(cId);
-        String user = RedisKeyUtil.commentUserCheck(cId, userEmail);
+        String upVoteKey = RedisKeyUtil.commentUpVote(cId);
+        String userVoteKey = RedisKeyUtil.commentUserCheck(cId, userEmail);
 
-        if (!redisTemplate.hasKey(user)) {
-            redisTemplate.opsForValue().increment(upVote);
-            redisTemplate.opsForValue().set(user, "1");
+        Boolean success = redisTemplate.opsForValue()
+                .setIfAbsent(userVoteKey, "1", Duration.ofHours(24));
+
+        if (Boolean.TRUE.equals(success)) {
+            redisTemplate.opsForValue().increment(upVoteKey);
         }
 
-        return redisTemplate.opsForValue().get(upVote);
+        return redisTemplate.opsForValue().get(upVoteKey);
     }
 
 
     @Override
     public String decreaseCommentCount(Long commentId, String userEmail) {
 
-        String downVote = RedisKeyUtil.commentDownVote(commentId);
-        String user = RedisKeyUtil.commentUserCheck(commentId, userEmail);
+        String downVoteKey = RedisKeyUtil.commentDownVote(commentId);
+        String userVoteKey = RedisKeyUtil.commentUserCheck(commentId, userEmail);
 
-        if (!redisTemplate.hasKey(user)) {
-            redisTemplate.opsForValue().increment(downVote);
-            redisTemplate.opsForValue().set(user, "1");
+        Boolean success = redisTemplate.opsForValue()
+                .setIfAbsent(userVoteKey, "1", Duration.ofHours(24));
+
+        if (Boolean.TRUE.equals(success)) {
+            redisTemplate.opsForValue().increment(downVoteKey);
         }
 
-        return redisTemplate.opsForValue().get(downVote);
+        return redisTemplate.opsForValue().get(downVoteKey);
     }
 
     @Override

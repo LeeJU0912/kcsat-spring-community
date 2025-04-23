@@ -152,11 +152,4 @@ public interface PostService {
      * @return 게시글 비추천수를 반환합니다.
      */
     String getDecreasePostVoteCount(Long pId);
-
-    /**
-     * 게시글 조회 기록을 초기화합니다.
-     * 매일 자정에 자동 실행되는 메서드입니다.
-     * 이 함수를 통해 1일 2회 이상 추천/비추천을 불가능하게 조절.
-     */
-    void resetPostView();
 }

@@ -1,5 +1,6 @@
 package hpclab.kcsatspringcommunity.community.service;
 
+import hpclab.kcsatspringcommunity.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.domain.Role;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignUpForm;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,19 +35,28 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public void signUp(MemberSignUpForm memberSignUpForm) {
-        if (memberRepository.existsByEmail(memberSignUpForm.getEmail())) {
+    public void signUp(MemberSignUpForm form) {
+        String signupLockKey = RedisKeyUtil.userIdemCheck(form.getEmail());
+
+        Boolean lockAcquired = redisTemplate.opsForValue()
+                .setIfAbsent(signupLockKey, "locked", Duration.ofMinutes(5));
+
+        if (Boolean.FALSE.equals(lockAcquired)) {
+            throw new ApiException(ErrorCode.SIGNUP_IN_PROGRESS);
+        }
+
+        if (memberRepository.existsByEmail(form.getEmail())) {
             throw new ApiException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         Member member = Member.builder()
-                .email(memberSignUpForm.getEmail())
-                .username(memberSignUpForm.getUsername())
-                .password(passwordEncoder.encode(memberSignUpForm.getPassword()))
+                .email(form.getEmail())
+                .username(form.getUsername())
+                .password(passwordEncoder.encode(form.getPassword()))
                 .role(Role.ROLE_USER)
                 .build();
 
-        redisTemplate.opsForValue().set(memberSignUpForm.getEmail(), memberSignUpForm.getUsername());
+        redisTemplate.opsForValue().set(form.getEmail(), form.getUsername());
 
         memberRepository.save(member);
         bookService.makeBook(member.getEmail());
