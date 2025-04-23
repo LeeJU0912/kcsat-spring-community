@@ -18,10 +18,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     /**
      * 게시글 정보로 댓글을 찾는 메서드입니다.
      *
-     * @param post 게시글 객체입니다.
-     * @return post 파라미터 게시글 안에 있는 모든 댓글 리스트를 반환합니다.
+     * @param pId 게시글 객체입니다.
+     * @return pId 게시글 안에 있는 모든 댓글 리스트를 반환합니다.
      */
-    List<Comment> findByPost(Post post);
+    List<Comment> findByPId(Long pId);
 
     /**
      * 댓글 ID와 일치하는 댓글을 조회하는 메서드입니다.

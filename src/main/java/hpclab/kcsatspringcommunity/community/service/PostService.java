@@ -1,7 +1,6 @@
 package hpclab.kcsatspringcommunity.community.service;
 
 import hpclab.kcsatspringcommunity.community.domain.Post;
-import hpclab.kcsatspringcommunity.community.dto.PostDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostWriteForm;
 import hpclab.kcsatspringcommunity.question.domain.QuestionType;
@@ -84,7 +83,7 @@ public interface PostService {
      * @param postWriteForm 게시글 수정 양식
      * @return 게시글 상세 정보를 반환합니다.
      */
-    PostDetailForm updatePost(Long pId, PostWriteForm postWriteForm);
+    PostResponseForm updatePost(Long pId, PostWriteForm postWriteForm);
 
     /**
      * pId에 맞는 게시글을 삭제하는 메서드입니다.

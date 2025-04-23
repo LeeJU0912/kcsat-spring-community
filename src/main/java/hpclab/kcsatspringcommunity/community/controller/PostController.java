@@ -39,16 +39,15 @@ import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
  *     <li>댓글 작성/삭제</li>
  *     <li>게시글 첨부 문제 마이북에 저장</li>
  *     <li>게시글, 댓글 추천/비추천</li>
- *     <li>인기 댓글 조회</li>
+ *     <li>댓글, 인기 댓글 조회</li>
  * </ul>
  */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class BoardController {
+public class PostController {
 
     private final PostService postService;
-    private final CommentService commentService;
     private final QuestionService questionService;
     private final BookService bookService;
 
@@ -129,42 +128,13 @@ public class BoardController {
      * @return 게시글 상세 정보를 반환합니다.
      */
     @GetMapping("/api/community/board/post/{pId}")
-    public ResponseEntity<PostDetailForm> board(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    public ResponseEntity<PostResponseForm> board(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         postService.increasePostViewCount(pId, userEmail);
 
         try {
-            PostDetailForm post = new PostDetailForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
-
-            List<CommentResponseForm> hotComments = commentService.getHotComments(pId);
-            post.setHotComments(hotComments);
-
-            List<String> hotCommentsUpVoteCounter = new ArrayList<>();
-            List<String> hotCommentsDownVoteCounter = new ArrayList<>();
-            List<String> commentsUpVoteCounter = new ArrayList<>();
-            List<String> commentsDownVoteCounter = new ArrayList<>();
-
-            hotComments.forEach(comment -> {
-                String commentUpVoteCount = commentService.getIncreaseCommentCount(comment.getCId());
-                hotCommentsUpVoteCounter.add(commentUpVoteCount);
-
-                String commentDownVoteCount = commentService.getDecreaseCommentCount(comment.getCId());
-                hotCommentsDownVoteCounter.add(commentDownVoteCount);
-            });
-
-            post.getComments().forEach(comment -> {
-                String commentUpVoteCount = commentService.getIncreaseCommentCount(comment.getCId());
-                commentsUpVoteCounter.add(commentUpVoteCount);
-
-                String commentDownVoteCount = commentService.getDecreaseCommentCount(comment.getCId());
-                commentsDownVoteCounter.add(commentDownVoteCount);
-            });
-
-            post.setHotCommentsUpVoteCounter(hotCommentsUpVoteCounter);
-            post.setHotCommentsDownVoteCounter(hotCommentsDownVoteCounter);
-            post.setCommentsUpVoteCounter(commentsUpVoteCounter);
-            post.setCommentsDownVoteCounter(commentsDownVoteCounter);
+            PostResponseForm post = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
 
             return ResponseEntity.ok(post);
         } catch (IllegalArgumentException e) {
@@ -234,12 +204,12 @@ public class BoardController {
      * @return 게시글을 저장하고 해당 게시글 상세 정보를 반환합니다.
      */
     @PostMapping("/api/community/board/post")
-    public ResponseEntity<PostDetailForm> writePost(@RequestHeader(AUTHORIZATION) String token, @RequestBody PostWriteForm form) {
+    public ResponseEntity<PostResponseForm> writePost(@RequestHeader(AUTHORIZATION) String token, @RequestBody PostWriteForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
             Long pId = postService.savePost(form, userEmail);
-            return ResponseEntity.ok(new PostDetailForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId))));
+            return ResponseEntity.ok(new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId))));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -261,9 +231,9 @@ public class BoardController {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
-            PostDetailForm post = new PostDetailForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
+            PostResponseForm post = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
 
-            if (!userEmail.equals(post.getPost().getEmail())) {
+            if (!userEmail.equals(post.getEmail())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("error");
             }
 
@@ -282,7 +252,7 @@ public class BoardController {
      * @return 수정된 게시글 상세 정보를 담아 반환합니다.
      */
     @PutMapping("/api/community/board/post/{pId}")
-    public ResponseEntity<PostDetailForm> updateBoard(@RequestHeader(AUTHORIZATION) String token,
+    public ResponseEntity<PostResponseForm> updateBoard(@RequestHeader(AUTHORIZATION) String token,
                                                       @PathVariable Long pId,
                                                       @RequestBody PostWriteForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
@@ -311,9 +281,9 @@ public class BoardController {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
-            PostDetailForm post = new PostDetailForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
+            PostResponseForm post = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
 
-            if (!userEmail.equals(post.getPost().getEmail())) {
+            if (!userEmail.equals(post.getEmail())) {
                 throw new IllegalArgumentException("error");
             }
 
@@ -381,84 +351,6 @@ public class BoardController {
                     .createdDate(question.getCreatedDate())
                     .build()
             );
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
-
-    /**
-     * 회원 커뮤니티 게시판 게시글에 댓글을 작성하는 메서드입니다.
-     *
-     * @param token 회원 JWT 토큰
-     * @param pId 게시글 ID
-     * @param form 댓글 본문이 작성된 Form DTO
-     * @return 댓글 등록이 잘 되었다면 ok를 반환합니다.
-     */
-    @PostMapping("/api/community/board/post/{pId}/comment")
-    public ResponseEntity<String> writeComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId, @RequestBody CommentWriteForm form) {
-        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
-
-        try {
-            Long cId = commentService.writeComment(form, pId, userEmail);
-
-            return ResponseEntity.ok(commentService.setCommentCount(cId));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
-    /**
-     * 회원 커뮤니티 게시판 게시글에 댓글을 추천하는 메서드입니다.
-     *
-     * @param token 회원 JWT 토큰
-     * @param cId 댓글 ID
-     * @return 추천한 댓글의 현재 추천수를 반환합니다.
-     */
-    @PostMapping("/api/community/board/comment/{cId}/vote/up")
-    public ResponseEntity<String> upVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
-        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
-
-        String commentCount = commentService.increaseCommentCount(cId, userEmail);
-
-        return ResponseEntity.ok(commentCount);
-    }
-
-    /**
-     * 회원 커뮤니티 게시판 게시글에 댓글을 비추천하는 메서드입니다.
-     *
-     * @param token 회원 JWT 토큰
-     * @param cId 댓글 ID
-     * @return 추천한 댓글의 현재 비추천수를 반환합니다.
-     */
-    @PostMapping("/api/community/board/comment/{cId}/vote/down")
-    public ResponseEntity<String> downVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
-        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
-
-        String commentCount = commentService.decreaseCommentCount(cId, userEmail);
-
-        return ResponseEntity.ok(commentCount);
-    }
-
-    /**
-     * 회원 커뮤니티 게시판 게시글에 작성된 댓글은 삭제하는 메서드입니다.
-     * <p><b>댓글 작성자 본인만 삭제가 가능합니다.</b></p>
-     *
-     * @param token 회원 JWT 토큰
-     * @param cId 댓글 ID
-     * @return 댓글 삭제가 정상적으로 되었다면 ok, 그렇지 않다면 BAD_REQUEST 반환.
-     */
-    @DeleteMapping("/api/community/board/comment/{cId}")
-    public ResponseEntity<String> removeComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
-        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
-
-        try {
-            if (!commentService.checkCommentWriter(userEmail, cId)) {
-                throw new IllegalArgumentException("error");
-            }
-
-            commentService.deleteComment(cId);
-            return ResponseEntity.ok("ok");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

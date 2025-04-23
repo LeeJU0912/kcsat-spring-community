@@ -1,5 +1,7 @@
 package hpclab.kcsatspringcommunity.community.service;
 
+import hpclab.kcsatspringcommunity.community.domain.Comment;
+import hpclab.kcsatspringcommunity.community.dto.CommentDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentWriteForm;
 
@@ -20,13 +22,22 @@ public interface CommentService {
      */
     Long writeComment(CommentWriteForm commentWriteForm, Long pId, String email);
 
+
+    /**
+     * 게시글에 작성된 모든 댓글을 불러오는 메서드입니다.
+     *
+     * @param pId 게시글 ID
+     * @return 게시글의 인기 댓글 3개와 모든 댓글들을 목록으로 담아 반환합니다.
+     */
+    CommentDetailForm getAllComments(Long pId);
+
     /**
      * 게시글에 작성된 인기 게시글을 불러오는 메서드입니다.
      *
-     * @param pId 게시글 ID
+     * @param comments 게시글 ID
      * @return 게시글에 달린 인기 댓글들을 목록으로 담아 반환합니다.
      */
-    List<CommentResponseForm> getHotComments(Long pId);
+    List<CommentResponseForm> getHotComments(List<Comment> comments);
 
     /**
      * 댓글을 삭제하는 메서드입니다.

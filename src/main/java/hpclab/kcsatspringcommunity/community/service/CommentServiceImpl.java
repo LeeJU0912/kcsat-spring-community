@@ -4,6 +4,7 @@ import hpclab.kcsatspringcommunity.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.community.domain.Comment;
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.domain.Post;
+import hpclab.kcsatspringcommunity.community.dto.CommentDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentWriteForm;
 import hpclab.kcsatspringcommunity.community.repository.CommentRepository;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static java.lang.Math.min;
@@ -35,6 +37,7 @@ public class CommentServiceImpl implements CommentService {
 
     private final MemberService memberService;
     private final PostService postService;
+
     private final CommentRepository commentRepository;
 
     private final RedisTemplate<String, String> redisTemplate;
@@ -43,12 +46,11 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Long writeComment(CommentWriteForm commentWriteForm, Long pId, String email) {
         Member member = memberService.findMemberByEmail(email);
-        Post post = postService.getPost(pId);
 
         Comment comment = Comment.builder()
                 .content(commentWriteForm.getContent())
                 .member(member)
-                .post(post)
+                .pId(pId)
                 .build();
 
         commentRepository.save(comment);
@@ -58,13 +60,51 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<CommentResponseForm> getHotComments(Long pId) {
+    public CommentDetailForm getAllComments(Long pId) {
+
+        List<Comment> comments = commentRepository.findByPId(pId);
+        List<CommentResponseForm> hotComments = getHotComments(comments);
+        List<CommentResponseForm> normalComments = new ArrayList<>();
+        comments.forEach(comment -> normalComments.add(new CommentResponseForm(comment)));
+
+        List<String> hotCommentsUpVoteCounter = new ArrayList<>();
+        List<String> hotCommentsDownVoteCounter = new ArrayList<>();
+        List<String> commentsUpVoteCounter = new ArrayList<>();
+        List<String> commentsDownVoteCounter = new ArrayList<>();
+
+        hotComments.forEach(comment -> {
+            String commentUpVoteCount = getIncreaseCommentCount(comment.getCId());
+            hotCommentsUpVoteCounter.add(commentUpVoteCount);
+
+            String commentDownVoteCount = getDecreaseCommentCount(comment.getCId());
+            hotCommentsDownVoteCounter.add(commentDownVoteCount);
+        });
+
+        normalComments.forEach(comment -> {
+            String commentUpVoteCount = getIncreaseCommentCount(comment.getCId());
+            commentsUpVoteCounter.add(commentUpVoteCount);
+
+            String commentDownVoteCount = getDecreaseCommentCount(comment.getCId());
+            commentsDownVoteCounter.add(commentDownVoteCount);
+        });
+
+        return new CommentDetailForm(
+                hotComments,
+                hotCommentsUpVoteCounter,
+                hotCommentsDownVoteCounter,
+                normalComments,
+                commentsUpVoteCounter,
+                commentsDownVoteCounter
+        );
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<CommentResponseForm> getHotComments(List<Comment> comments) {
         List<CommentResponseForm> hotComments = new ArrayList<>();
 
-        Post post = postService.getPost(pId);
-
         List<CommentsSort> commentsSort = new ArrayList<>();
-        post.getComment().forEach(comment -> {
+        comments.forEach(comment -> {
             String upVote = redisTemplate.opsForValue().get(RedisKeyUtil.commentUpVote(comment.getCId()));
             String downVote = redisTemplate.opsForValue().get(RedisKeyUtil.commentDownVote(comment.getCId()));
 
@@ -72,14 +112,14 @@ public class CommentServiceImpl implements CommentService {
                 long calc = Long.parseLong(upVote) - Long.parseLong(downVote);
 
                 if (calc >= 2) {
-                    commentsSort.add(new CommentsSort(calc, pId, comment));
+                    commentsSort.add(new CommentsSort(calc, comment));
                 }
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException();
             }
         });
 
-        Collections.sort(commentsSort);
+        commentsSort.sort(Comparator.comparing(CommentsSort::getCounter).reversed());
 
         for (int i = 0; i < min(commentsSort.size(), 3); i++) {
             hotComments.add(
@@ -92,22 +132,17 @@ public class CommentServiceImpl implements CommentService {
         return hotComments;
     }
 
-    private static class CommentsSort implements Comparable<CommentsSort> {
+    private class CommentsSort {
         Long counter;
-        Long cid;
-
         Comment comment;
 
-        public CommentsSort(Long counter, Long cid, Comment comment) {
+        public CommentsSort(Long counter, Comment comment) {
             this.counter = counter;
-            this.cid = cid;
             this.comment = comment;
         }
 
-        @Override
-        public int compareTo(CommentsSort o) {
-
-            return (int) (o.counter - counter);
+        Long getCounter() {
+            return counter;
         }
     }
 

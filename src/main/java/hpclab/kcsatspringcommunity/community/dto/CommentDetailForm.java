@@ -1,23 +1,13 @@
 package hpclab.kcsatspringcommunity.community.dto;
 
-import hpclab.kcsatspringcommunity.community.domain.Post;
-import hpclab.kcsatspringcommunity.community.service.PostService;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
 
-/**
- * 게시글 상세 정보 변환 DTO 클래스입니다.
- */
 @Data
-@Builder
-public class PostDetailForm {
-
-    /**
-     * 게시글 상세 정보. 자세한 사항은 PostResponseForm 참조.
-     */
-    private PostResponseForm post;
+@AllArgsConstructor
+public class CommentDetailForm {
 
     /**
      * 인기 댓글 모음
@@ -48,10 +38,4 @@ public class PostDetailForm {
      * 댓글 각각의 비추천수
      */
     private List<String> commentsDownVoteCounter;
-
-    @Builder
-    public PostDetailForm(Post post, Long viewCount) {
-        this.post = new PostResponseForm(post, viewCount);
-        this.comments = post.getComment().stream().map(CommentResponseForm::new).toList();
-    }
 }

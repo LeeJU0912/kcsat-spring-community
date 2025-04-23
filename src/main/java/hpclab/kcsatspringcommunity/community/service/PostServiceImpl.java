@@ -3,7 +3,6 @@ package hpclab.kcsatspringcommunity.community.service;
 import hpclab.kcsatspringcommunity.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.domain.Post;
-import hpclab.kcsatspringcommunity.community.dto.PostDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostWriteForm;
 import hpclab.kcsatspringcommunity.community.repository.PostRepository;
@@ -129,15 +128,13 @@ public class PostServiceImpl implements PostService {
 
     @Transactional(readOnly = true)
     @Override
-    public PostDetailForm updatePost(Long pId, PostWriteForm postWriteForm) {
+    public PostResponseForm updatePost(Long pId, PostWriteForm postWriteForm) {
         Post post = postRepository.findById(pId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
 
         post.update(postWriteForm.getTitle(), postWriteForm.getContent());
 
-        return PostDetailForm.builder()
-                .post(new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId()))))
-                .build();
+        return new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId())));
     }
 
     @Transactional
