@@ -37,7 +37,7 @@ public enum QuestionType {
         this.krName = krName;
     }
 
-    public static QuestionType getRandomQuestionType() {
-        return QuestionType.values()[RANDOM.nextInt(QuestionType.values().length)];
-    }
+//    public static QuestionType getRandomQuestionType() {
+//        return QuestionType.values()[RANDOM.nextInt(QuestionType.values().length)];
+//    }
 }

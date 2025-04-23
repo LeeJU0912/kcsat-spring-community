@@ -4,6 +4,8 @@ import hpclab.kcsatspringcommunity.JWTUtil;
 import hpclab.kcsatspringcommunity.community.dto.CommentDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentWriteForm;
 import hpclab.kcsatspringcommunity.community.service.CommentService;
+import hpclab.kcsatspringcommunity.exception.ApiResponse;
+import hpclab.kcsatspringcommunity.exception.SuccessCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static hpclab.kcsatspringcommunity.JWTUtil.AUTHORIZATION;
 import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
+import static hpclab.kcsatspringcommunity.exception.SuccessCode.COMMENT_DELETE_SUCCESS;
 
 /**
  * <p>회원 커뮤니티 댓글 컨트롤러 클래스입니다.</p>
@@ -39,13 +42,8 @@ public class CommentController {
      * @return 댓글 상세 정보를 반환합니다.
      */
     @GetMapping("/api/community/board/post/{pId}/comment")
-    public ResponseEntity<CommentDetailForm> getComment(@PathVariable Long pId) {
-
-        try {
-            return ResponseEntity.ok(commentService.getAllComments(pId));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+    public ResponseEntity<ApiResponse<CommentDetailForm>> getComment(@PathVariable Long pId) {
+        return ResponseEntity.ok(new ApiResponse<>(true, commentService.getAllComments(pId), null, null));
     }
 
     /**
@@ -57,19 +55,15 @@ public class CommentController {
      * @return 댓글 등록이 잘 되었다면 ok를 반환합니다.
      */
     @PostMapping("/api/community/board/post/{pId}/comment")
-    public ResponseEntity<String> writeComment(@RequestHeader(AUTHORIZATION) String token,
+    public ResponseEntity<ApiResponse<String>> writeComment(@RequestHeader(AUTHORIZATION) String token,
                                                @PathVariable Long pId,
                                                @RequestBody CommentWriteForm form) {
 
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
-        try {
-            Long cId = commentService.writeComment(form, pId, userEmail);
+        Long cId = commentService.writeComment(form, pId, userEmail);
 
-            return ResponseEntity.ok(commentService.setCommentCount(cId));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        return ResponseEntity.ok(new ApiResponse<>(true, commentService.setCommentCount(cId), null, null));
     }
 
     /**
@@ -80,12 +74,12 @@ public class CommentController {
      * @return 추천한 댓글의 현재 추천수를 반환합니다.
      */
     @PostMapping("/api/community/board/comment/{cId}/vote/up")
-    public ResponseEntity<String> upVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
+    public ResponseEntity<ApiResponse<String>> upVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         String commentCount = commentService.increaseCommentCount(cId, userEmail);
 
-        return ResponseEntity.ok(commentCount);
+        return ResponseEntity.ok(new ApiResponse<>(true, commentCount, null, null));
     }
 
     /**
@@ -96,12 +90,12 @@ public class CommentController {
      * @return 추천한 댓글의 현재 비추천수를 반환합니다.
      */
     @PostMapping("/api/community/board/comment/{cId}/vote/down")
-    public ResponseEntity<String> downVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
+    public ResponseEntity<ApiResponse<String>> downVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         String commentCount = commentService.decreaseCommentCount(cId, userEmail);
 
-        return ResponseEntity.ok(commentCount);
+        return ResponseEntity.ok(new ApiResponse<>(true, commentCount, null, null));
     }
 
     /**
@@ -113,18 +107,12 @@ public class CommentController {
      * @return 댓글 삭제가 정상적으로 되었다면 ok, 그렇지 않다면 BAD_REQUEST 반환.
      */
     @DeleteMapping("/api/community/board/comment/{cId}")
-    public ResponseEntity<String> removeComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
+    public ResponseEntity<ApiResponse<Void>> removeComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
-        try {
-            if (!commentService.checkCommentWriter(userEmail, cId)) {
-                throw new IllegalArgumentException("error");
-            }
+        commentService.checkCommentWriter(userEmail, cId);
+        commentService.deleteComment(cId);
 
-            commentService.deleteComment(cId);
-            return ResponseEntity.ok("ok");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        return ResponseEntity.ok(new ApiResponse<>(true, null, COMMENT_DELETE_SUCCESS.getCode(), COMMENT_DELETE_SUCCESS.getMessage()));
     }
 }

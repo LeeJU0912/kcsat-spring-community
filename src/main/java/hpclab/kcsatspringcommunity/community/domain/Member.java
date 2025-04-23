@@ -41,8 +41,6 @@ public class Member extends BaseTimeEntity {
      * 회원 로그인시 사용될 email 아이디를 저장합니다.
      * 중복된 값을 허용하지 않습니다.
      */
-    @NotBlank(message = "이메일을 입력해주세요.")
-    @Email(message = "올바른 이메일을 입력해주세요.")
     @Column(name = "member_email", nullable = false, unique = true)
     private String email;
 
@@ -50,15 +48,12 @@ public class Member extends BaseTimeEntity {
      * 회원 별명을 저장합니다.
      * 2~12자로 지정이 가능합니다.
      */
-    @NotBlank(message = "닉네임을 입력해주세요.")
-    @Size(min = 2, max = 12, message = "닉네임은 2 ~ 12자 사이로 입력해주세요.")
     @Column(name = "member_name", nullable = false, unique = true)
     private String username;
 
     /**
      * 회원 비밀번호를 저장합니다.
      */
-    @NotBlank(message = "비밀번호를 입력해주세요.")
     @Column(name = "member_password", nullable = false)
     private String password;
 

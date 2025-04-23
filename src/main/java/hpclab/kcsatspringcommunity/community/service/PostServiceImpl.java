@@ -6,6 +6,8 @@ import hpclab.kcsatspringcommunity.community.domain.Post;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostWriteForm;
 import hpclab.kcsatspringcommunity.community.repository.PostRepository;
+import hpclab.kcsatspringcommunity.exception.ApiException;
+import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import hpclab.kcsatspringcommunity.myBook.service.BookQuestionService;
 import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Question;
@@ -123,14 +125,14 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post getPost(Long pId) {
         return postRepository.findByIdWithComments(pId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
     @Override
     public PostResponseForm updatePost(Long pId, PostWriteForm postWriteForm) {
-        Post post = postRepository.findById(pId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+        Post post = postRepository.findByIdWithComments(pId)
+                .orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
 
         post.update(postWriteForm.getTitle(), postWriteForm.getContent());
 
@@ -141,7 +143,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public void removePost(Long pId) {
         Post post = postRepository.findById(pId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
         postRepository.delete(post);
     }
 
@@ -194,7 +196,7 @@ public class PostServiceImpl implements PostService {
         try {
             if (Long.parseLong(nowVote) >= 20) {
                 Post post = postRepository.findById(pId)
-                        .orElseThrow(() -> new IllegalArgumentException("핫게 등록 실패."));
+                        .orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
 
                 post.gettingHot();
                 postRepository.save(post);

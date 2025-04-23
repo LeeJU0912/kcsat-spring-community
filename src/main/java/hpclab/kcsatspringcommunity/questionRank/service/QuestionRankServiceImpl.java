@@ -1,6 +1,8 @@
 package hpclab.kcsatspringcommunity.questionRank.service;
 
 import hpclab.kcsatspringcommunity.RedisKeyUtil;
+import hpclab.kcsatspringcommunity.exception.ApiException;
+import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionResponseForm;
@@ -44,7 +46,7 @@ public class QuestionRankServiceImpl implements QuestionRankService {
             Long qId = Long.parseLong(qIdString);
 
             Question question = questionJPARepository.findWithChoicesById(qId)
-                    .orElseThrow(() -> new IllegalArgumentException("없는 문제입니다."));
+                    .orElseThrow(() -> new ApiException(ErrorCode.QUESTION_NOT_FOUND));
 
             questions.add(QuestionResponseForm.builder()
                     .qId(question.getId())

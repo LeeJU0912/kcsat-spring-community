@@ -1,5 +1,7 @@
 package hpclab.kcsatspringcommunity.myBook.service;
 
+import hpclab.kcsatspringcommunity.exception.ApiException;
+import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import hpclab.kcsatspringcommunity.myBook.domain.Book;
 import hpclab.kcsatspringcommunity.myBook.domain.BookQuestion;
 import hpclab.kcsatspringcommunity.myBook.dto.BookResponseForm;
@@ -31,6 +33,6 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book findBook(String userEmail) {
         return bookRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.MYBOOK_NOT_FOUND));
     }
 }

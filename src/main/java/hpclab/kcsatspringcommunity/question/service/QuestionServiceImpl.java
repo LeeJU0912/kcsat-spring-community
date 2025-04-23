@@ -1,5 +1,7 @@
 package hpclab.kcsatspringcommunity.question.service;
 
+import hpclab.kcsatspringcommunity.exception.ApiException;
+import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public Question getQuestion(Long qId) {
         return questionJPARepository.findWithChoicesById(qId)
-                .orElseThrow(() -> new IllegalArgumentException("Question not found"));
+                .orElseThrow(() -> new ApiException(ErrorCode.QUESTION_NOT_FOUND));
     }
 
     @Transactional

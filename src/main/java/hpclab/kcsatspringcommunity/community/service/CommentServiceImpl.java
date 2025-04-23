@@ -8,6 +8,8 @@ import hpclab.kcsatspringcommunity.community.dto.CommentDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentWriteForm;
 import hpclab.kcsatspringcommunity.community.repository.CommentRepository;
+import hpclab.kcsatspringcommunity.exception.ApiException;
+import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -36,7 +38,6 @@ import static java.lang.Math.min;
 public class CommentServiceImpl implements CommentService {
 
     private final MemberService memberService;
-    private final PostService postService;
 
     private final CommentRepository commentRepository;
 
@@ -154,11 +155,13 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional(readOnly = true)
     @Override
-    public boolean checkCommentWriter(String email, Long cId) {
+    public void checkCommentWriter(String email, Long cId) {
         Comment comment = commentRepository.findCommentWithMember(cId)
-                .orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 댓글입니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.COMMENT_NOT_FOUND));
 
-        return comment.getMember().getEmail().equals(email);
+        if (!comment.getMember().getEmail().equals(email)) {
+            throw new ApiException(ErrorCode.USER_VERIFICATION_FAILED);
+        }
     }
 
     @Override

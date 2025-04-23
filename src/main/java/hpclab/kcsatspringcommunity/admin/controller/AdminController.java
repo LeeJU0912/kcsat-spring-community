@@ -10,6 +10,7 @@ import hpclab.kcsatspringcommunity.community.dto.MemberDetailsResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.service.MemberService;
+import hpclab.kcsatspringcommunity.exception.ApiResponse;
 import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
@@ -53,8 +54,8 @@ public class AdminController {
      * @return 회원 건의사항 목록
      */
     @GetMapping("/api/community/admin/requests")
-    public ResponseEntity<List<UserRequestResponseForm>> getUserRequests() {
-        return ResponseEntity.ok(userRequestService.getUserRequests());
+    public ResponseEntity<ApiResponse<List<UserRequestResponseForm>>> getUserRequests() {
+        return ResponseEntity.ok(new ApiResponse<>(true, userRequestService.getUserRequests(), null, null));
     }
 
     /**
@@ -63,8 +64,8 @@ public class AdminController {
      * @return 회원 목록(ID)
      */
     @GetMapping("/api/community/admin/members")
-    public ResponseEntity<List<MemberResponseForm>> getMemberList() {
-        return ResponseEntity.ok(memberService.findMembers());
+    public ResponseEntity<ApiResponse<List<MemberResponseForm>>> getMemberList() {
+        return ResponseEntity.ok(new ApiResponse<>(true, memberService.findMembers(), null, null));
     }
 
     /**
@@ -74,9 +75,9 @@ public class AdminController {
      * @return 회원 세부 정보
      */
     @GetMapping("/api/community/admin/members/{mId}")
-    public ResponseEntity<MemberDetailsResponseForm> getMemberDetail(@PathVariable Long mId) {
+    public ResponseEntity<ApiResponse<MemberDetailsResponseForm>> getMemberDetail(@PathVariable Long mId) {
         Member member = memberService.findMemberById(mId);
-        return ResponseEntity.ok(new MemberDetailsResponseForm(member));
+        return ResponseEntity.ok(new ApiResponse<>(true, new MemberDetailsResponseForm(member), null, null));
     }
 
     /**
@@ -86,12 +87,13 @@ public class AdminController {
      * @return 회원 작성 게시글 목록
      */
     @GetMapping("/api/community/admin/members/{mId}/posts")
-    public ResponseEntity<List<PostResponseForm>> getMemberDetailPosts(@PathVariable Long mId) {
+    public ResponseEntity<ApiResponse<List<PostResponseForm>>> getMemberDetailPosts(@PathVariable Long mId) {
         Member member = memberService.findMemberById(mId);
-        return ResponseEntity.ok(member.getPosts().stream()
+        List<PostResponseForm> posts = member.getPosts().stream()
                 .map(x -> PostResponseForm.builder().post(x).build())
-                .toList()
-        );
+                .toList();
+
+        return ResponseEntity.ok(new ApiResponse<>(true, posts, null, null));
     }
 
     /**
@@ -101,12 +103,13 @@ public class AdminController {
      * @return 회원 작성 댓글 목록
      */
     @GetMapping("/api/community/admin/members/{mId}/comments")
-    public ResponseEntity<List<CommentResponseForm>> memberDetailComments(@PathVariable Long mId) {
+    public ResponseEntity<ApiResponse<List<CommentResponseForm>>> memberDetailComments(@PathVariable Long mId) {
         Member member = memberService.findMemberById(mId);
-        return ResponseEntity.ok(member.getComments().stream()
+        List<CommentResponseForm> comments = member.getComments().stream()
                 .map(x -> CommentResponseForm.builder().comment(x).build())
-                .toList()
-        );
+                .toList();
+
+        return ResponseEntity.ok(new ApiResponse<>(true, comments, null, null));
     }
 
     /**
@@ -117,7 +120,7 @@ public class AdminController {
      * @return 보낸 문제에 대한 신고자, 문제 세부 사항 등 결과 객체
      */
     @PostMapping("/api/community/result/junk")
-    public ResponseEntity<UserRequestResponseForm> filterQuestion(@RequestHeader(AUTHORIZATION) String token, @RequestBody QuestionDto form) {
+    public ResponseEntity<ApiResponse<UserRequestResponseForm>> filterQuestion(@RequestHeader(AUTHORIZATION) String token, @RequestBody QuestionDto form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         Question question = Question
@@ -134,7 +137,9 @@ public class AdminController {
 
         Long qId = questionService.saveQuestion(question);
 
-        return ResponseEntity.ok(userRequestService.updateUserRequestForm(userRequestService.getQuestionErrorForm(qId, userEmail), userEmail));
+        UserRequestResponseForm userRequestResponse = userRequestService.updateUserRequestForm(userRequestService.getQuestionErrorForm(qId, userEmail), userEmail);
+
+        return ResponseEntity.ok(new ApiResponse<>(true, userRequestResponse, null, null));
     }
 
     /**
@@ -145,9 +150,11 @@ public class AdminController {
      * @return 보낸 문제에 대한 신고자, 문제 세부 사항 등 결과 객체
      */
     @PostMapping("/api/community/improving")
-    public ResponseEntity<UserRequestResponseForm> requestImproving(@RequestHeader(AUTHORIZATION) String token, @RequestBody UserRequestRequestForm form) {
+    public ResponseEntity<ApiResponse<UserRequestResponseForm>> requestImproving(@RequestHeader(AUTHORIZATION) String token, @RequestBody UserRequestRequestForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
-        return ResponseEntity.ok(userRequestService.updateUserRequestForm(userRequestService.getImprovingForm(form, userEmail), userEmail));
+        UserRequestResponseForm userRequestResponse = userRequestService.updateUserRequestForm(userRequestService.getImprovingForm(form, userEmail), userEmail);
+
+        return ResponseEntity.ok(new ApiResponse<>(true, userRequestResponse, null, null));
     }
 }

@@ -29,10 +29,6 @@ public class QuestionRankController {
     @GetMapping("/api/community/open/weekly")
     public ResponseEntity<List<QuestionResponseForm>> weeklyQuestionRank() {
 
-        try {
-            return ResponseEntity.ok(questionRankService.getRankedQuestions());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        return ResponseEntity.ok(questionRankService.getRankedQuestions());
     }
 }

@@ -5,6 +5,8 @@ import hpclab.kcsatspringcommunity.community.domain.Role;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignUpForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberResponseForm;
 import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
+import hpclab.kcsatspringcommunity.exception.ApiException;
+import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import hpclab.kcsatspringcommunity.myBook.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -33,7 +35,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void signUp(MemberSignUpForm memberSignUpForm) {
         if (memberRepository.existsByEmail(memberSignUpForm.getEmail())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일 입니다.");
+            throw new ApiException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         Member member = Member.builder()
@@ -68,12 +70,14 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     @Override
     public Member findMemberByEmail(String email) {
-        return memberRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 계정입니다."));
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
     @Override
     public Member findMemberById(Long mId) {
-        return memberRepository.findById(mId).orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 회원입니다."));
+        return memberRepository.findById(mId)
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
     }
 }

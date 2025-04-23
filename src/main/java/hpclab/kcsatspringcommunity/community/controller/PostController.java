@@ -4,6 +4,10 @@ import hpclab.kcsatspringcommunity.JWTUtil;
 import hpclab.kcsatspringcommunity.community.dto.*;
 import hpclab.kcsatspringcommunity.community.service.CommentService;
 import hpclab.kcsatspringcommunity.community.service.PostService;
+import hpclab.kcsatspringcommunity.exception.ApiException;
+import hpclab.kcsatspringcommunity.exception.ApiResponse;
+import hpclab.kcsatspringcommunity.exception.ErrorCode;
+import hpclab.kcsatspringcommunity.exception.SuccessCode;
 import hpclab.kcsatspringcommunity.myBook.dto.BookResponseForm;
 import hpclab.kcsatspringcommunity.myBook.service.BookService;
 import hpclab.kcsatspringcommunity.question.service.QuestionService;
@@ -26,6 +30,7 @@ import java.util.List;
 
 import static hpclab.kcsatspringcommunity.JWTUtil.AUTHORIZATION;
 import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
+import static hpclab.kcsatspringcommunity.exception.SuccessCode.POST_DELETE_SUCCESS;
 
 /**
  * <p>회원 커뮤니티 게시판 컨트롤러 클래스입니다.</p>
@@ -67,11 +72,11 @@ public class PostController {
      * @return 게시글 목록을 Page 단위로 묶어서 반환합니다.
      */
     @GetMapping("/api/community/open/board")
-    public ResponseEntity<Page<PostResponseForm>> getPostListByPage(@RequestParam(defaultValue = "0") int page,
-                                                                    @RequestParam(defaultValue = "10") int size,
-                                                                    @RequestParam(defaultValue = "pId,DESC") String sort,
-                                                                    @RequestParam(required = false) String keyword,
-                                                                    @RequestParam(required = false) QuestionType type
+    public ResponseEntity<ApiResponse<Page<PostResponseForm>>> getPostListByPage(@RequestParam(defaultValue = "0") int page,
+                                                                                 @RequestParam(defaultValue = "10") int size,
+                                                                                 @RequestParam(defaultValue = "pId,DESC") String sort,
+                                                                                 @RequestParam(required = false) String keyword,
+                                                                                 @RequestParam(required = false) QuestionType type
                                                                     ) {
 
         // 정렬 기준 처리
@@ -80,10 +85,10 @@ public class PostController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
 
         if ((keyword == null || keyword.isEmpty()) && type == null) {
-            return ResponseEntity.ok(postService.getPostList(pageable));
+            return ResponseEntity.ok(new ApiResponse<>(true, postService.getPostList(pageable), null, null));
         }
         else {
-            return ResponseEntity.ok(postService.getFindPostList(pageable, keyword, type));
+            return ResponseEntity.ok(new ApiResponse<>(true, postService.getFindPostList(pageable, keyword, type), null, null));
         }
     }
 
@@ -100,7 +105,7 @@ public class PostController {
      * @return 게시글 목록을 Page 단위로 묶어서 반환합니다.
      */
     @GetMapping("/api/community/open/board/hot")
-    public ResponseEntity<Page<PostResponseForm>> hotBoard(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<ApiResponse<Page<PostResponseForm>>> hotBoard(@RequestParam(defaultValue = "0") int page,
                                                            @RequestParam(defaultValue = "10") int size,
                                                            @RequestParam(defaultValue = "pId,DESC") String sort,
                                                            @RequestParam(required = false) String keyword,
@@ -113,10 +118,10 @@ public class PostController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
 
         if ((keyword == null || keyword.isEmpty()) && type == null) {
-            return ResponseEntity.ok(postService.getHotPostList(pageable));
+            return ResponseEntity.ok(new ApiResponse<>(true, postService.getHotPostList(pageable), null, null));
         }
         else {
-            return ResponseEntity.ok(postService.getFindHotPostList(pageable, keyword, type));
+            return ResponseEntity.ok(new ApiResponse<>(true, postService.getFindHotPostList(pageable, keyword, type), null, null));
         }
     }
 
@@ -128,18 +133,14 @@ public class PostController {
      * @return 게시글 상세 정보를 반환합니다.
      */
     @GetMapping("/api/community/board/post/{pId}")
-    public ResponseEntity<PostResponseForm> board(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    public ResponseEntity<ApiResponse<PostResponseForm>> board(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         postService.increasePostViewCount(pId, userEmail);
 
-        try {
-            PostResponseForm post = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
+        PostResponseForm post = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
 
-            return ResponseEntity.ok(post);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        return ResponseEntity.ok(new ApiResponse<>(true, post, null, null));
     }
 
     /**
@@ -149,8 +150,8 @@ public class PostController {
      * @return 게시글 추천 수를 반환합니다.
      */
     @GetMapping("/api/community/board/post/{pId}/vote/up")
-    public ResponseEntity<String> getUpVotePost(@PathVariable Long pId) {
-        return ResponseEntity.ok(postService.getIncreasePostVoteCount(pId));
+    public ResponseEntity<ApiResponse<String>> getUpVotePost(@PathVariable Long pId) {
+        return ResponseEntity.ok(new ApiResponse<>(true, postService.getIncreasePostVoteCount(pId), null, null));
     }
 
 
@@ -161,8 +162,8 @@ public class PostController {
      * @return 게시글 비추천 수를 반환합니다.
      */
     @GetMapping("/api/community/board/post/{pId}/vote/down")
-    public ResponseEntity<String> getDownVotePost(@PathVariable Long pId) {
-        return ResponseEntity.ok(postService.getDecreasePostVoteCount(pId));
+    public ResponseEntity<ApiResponse<String>> getDownVotePost(@PathVariable Long pId) {
+        return ResponseEntity.ok(new ApiResponse<>(true, postService.getDecreasePostVoteCount(pId), null, null));
     }
 
 
@@ -175,9 +176,9 @@ public class PostController {
      * @return 게시글 추천 수를 반환합니다.
      */
     @PostMapping("/api/community/board/post/{pId}/vote/up")
-    public ResponseEntity<String> upVotePost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    public ResponseEntity<ApiResponse<String>> upVotePost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
-        return ResponseEntity.ok(postService.increasePostVoteCount(pId, userEmail));
+        return ResponseEntity.ok(new ApiResponse<>(true, postService.increasePostVoteCount(pId, userEmail), null, null));
     }
 
 
@@ -190,9 +191,9 @@ public class PostController {
      * @return 게시글 비추천 수를 반환합니다.
      */
     @PostMapping("/api/community/board/post/{pId}/vote/down")
-    public ResponseEntity<String> downVotePost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    public ResponseEntity<ApiResponse<String>> downVotePost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
-        return ResponseEntity.ok(postService.decreasePostVoteCount(pId, userEmail));
+        return ResponseEntity.ok(new ApiResponse<>(true, postService.decreasePostVoteCount(pId, userEmail), null, null));
     }
 
 
@@ -204,44 +205,15 @@ public class PostController {
      * @return 게시글을 저장하고 해당 게시글 상세 정보를 반환합니다.
      */
     @PostMapping("/api/community/board/post")
-    public ResponseEntity<PostResponseForm> writePost(@RequestHeader(AUTHORIZATION) String token, @RequestBody PostWriteForm form) {
+    public ResponseEntity<ApiResponse<PostResponseForm>> writePost(@RequestHeader(AUTHORIZATION) String token, @RequestBody PostWriteForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
-        try {
-            Long pId = postService.savePost(form, userEmail);
-            return ResponseEntity.ok(new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId))));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        Long pId = postService.savePost(form, userEmail);
+
+        PostResponseForm postResponseForm = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
+        return ResponseEntity.ok(new ApiResponse<>(true, postResponseForm, null, null));
     }
 
-    /**
-     * (추후 수정 필요)
-     *
-     * 회원 커뮤니티 게시글을 수정할 수 있는 권한을 체크합니다.
-     * 해당 게시글 작성자와 현재 클라이언트 로그인 정보가 같은 경우에만 수정할 수 있습니다.
-     *
-     * @param token 회원 JWT 토큰
-     * @param pId 게시글 ID
-     * @return 게시글 권한이 확인되면 ok, 그렇지 않으면 BAD_REQUEST 발생.
-     */
-    @GetMapping("/api/community/board/post/{pId}")
-    public ResponseEntity<String> updateBoardForm(@RequestHeader(AUTHORIZATION) String token,
-                                                  @PathVariable Long pId) {
-        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
-
-        try {
-            PostResponseForm post = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
-
-            if (!userEmail.equals(post.getEmail())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("error");
-            }
-
-            return ResponseEntity.ok("ok");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("error");
-        }
-    }
 
     /**
      * 회원 커뮤니티 게시판 게시글을 수정하는 메서드입니다.
@@ -252,21 +224,18 @@ public class PostController {
      * @return 수정된 게시글 상세 정보를 담아 반환합니다.
      */
     @PutMapping("/api/community/board/post/{pId}")
-    public ResponseEntity<PostResponseForm> updateBoard(@RequestHeader(AUTHORIZATION) String token,
+    public ResponseEntity<ApiResponse<PostResponseForm>> updateBoard(@RequestHeader(AUTHORIZATION) String token,
                                                       @PathVariable Long pId,
                                                       @RequestBody PostWriteForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
-        try {
-            if (!userEmail.equals(postService.getPost(pId).getMember().getEmail())) {
-                throw new IllegalArgumentException("error");
-            }
-
-            return ResponseEntity.ok(postService.updatePost(pId, form));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        if (!userEmail.equals(postService.getPost(pId).getMember().getEmail())) {
+            throw new ApiException(ErrorCode.USER_VERIFICATION_FAILED);
         }
+
+        return ResponseEntity.ok(new ApiResponse<>(true, postService.updatePost(pId, form), null, null));
     }
+
 
     /**
      * 회원 커뮤니티 게시판 게시글을 삭제하는 메서드입니다.
@@ -277,22 +246,18 @@ public class PostController {
      * @return 권한이 확인되었고 정상적으로 삭제된다면 ok, 이외의 경우에는 BAD_REQUEST 발생.
      */
     @DeleteMapping("/api/community/board/post/{pId}")
-    public ResponseEntity<String> removeBoard(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    public ResponseEntity<ApiResponse<String>> removeBoard(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
-        try {
-            PostResponseForm post = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
+        PostResponseForm post = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
 
-            if (!userEmail.equals(post.getEmail())) {
-                throw new IllegalArgumentException("error");
-            }
-
-            postService.removePost(pId);
-
-            return ResponseEntity.ok("removed");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        if (!userEmail.equals(post.getEmail())) {
+            throw new ApiException(ErrorCode.USER_VERIFICATION_FAILED);
         }
+
+        postService.removePost(pId);
+
+        return ResponseEntity.ok(new ApiResponse<>(true, null, POST_DELETE_SUCCESS.getCode(), POST_DELETE_SUCCESS.getMessage()));
     }
 
 
@@ -304,15 +269,12 @@ public class PostController {
      * @return 게시글에 첨부된 문제가 정상적으로 저장되면 ok, 그렇지 않으면 BAD_REQUEST 반환.
      */
     @PostMapping("/api/community/board/post/{qId}/question")
-    public ResponseEntity<String> saveQuestionFromPost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long qId) {
+    public ResponseEntity<ApiResponse<String>> saveQuestionFromPost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long qId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
-        try {
-            return ResponseEntity.ok(postService.saveQuestionFromPost(qId, userEmail).toString());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("error");
-        }
+        return ResponseEntity.ok(new ApiResponse<>(true, postService.saveQuestionFromPost(qId, userEmail).toString(), null, null));
     }
+
 
     /**
      * 게시글에 문제를 첨부하기 위해, 나의 문제 목록을 보여주는 메서드입니다.
@@ -321,15 +283,12 @@ public class PostController {
      * @return 회원이 저장한 모든 문제들의 리스트를 보여줍니다.
      */
     @GetMapping("/api/community/board/post/uploadQuestion")
-    public ResponseEntity<BookResponseForm> getUserQuestions(@RequestHeader(AUTHORIZATION) String token) {
+    public ResponseEntity<ApiResponse<BookResponseForm>> getUserQuestions(@RequestHeader(AUTHORIZATION) String token) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
-        try {
-            return ResponseEntity.ok(new BookResponseForm(bookService.findBook(userEmail)));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        return ResponseEntity.ok(new ApiResponse<>(true, new BookResponseForm(bookService.findBook(userEmail)), null, null));
     }
+
 
     /**
      * 첨부할 문제 ID를 요청하면, 첨부되는 문제 상세 정보를 반환합니다.
@@ -338,21 +297,10 @@ public class PostController {
      * @return 문제 상세 정보를 반환합니다.
      */
     @PostMapping("/api/community/board/post/uploadQuestion")
-    public ResponseEntity<QuestionResponseForm> uploadUserQuestion(@RequestParam Long qId) {
-        try {
-            Question question = questionService.getQuestion(qId);
-            return ResponseEntity.ok(QuestionResponseForm.builder()
-                    .qId(question.getId())
-                    .questionType(question.getType().getKrName())
-                    .title(question.getTitle())
-                    .mainText(question.getMainText())
-                    .choices(question.getChoices().stream().map(Choice::getChoice).toList())
-                    .shareCounter(question.getShareCounter())
-                    .createdDate(question.getCreatedDate())
-                    .build()
-            );
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+    public ResponseEntity<ApiResponse<QuestionResponseForm>> uploadUserQuestion(@RequestParam Long qId) {
+
+        Question question = questionService.getQuestion(qId);
+
+        return ResponseEntity.ok(new ApiResponse<>(true, new QuestionResponseForm(question), null, null));
     }
 }

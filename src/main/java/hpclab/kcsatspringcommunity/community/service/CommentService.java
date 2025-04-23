@@ -51,9 +51,8 @@ public interface CommentService {
      *
      * @param email 현재 요청한 회원 email 아이디
      * @param cId 댓글 ID
-     * @return 댓글 작성자 email 아이디와 일치한다면 true, 그렇지 않다면 false
      */
-    boolean checkCommentWriter(String email, Long cId);
+    void checkCommentWriter(String email, Long cId);
 
     /**
      * 댓글 최초 작성 시 추천, 비추천 카운트를 0으로 세팅하는 메서드입니다.

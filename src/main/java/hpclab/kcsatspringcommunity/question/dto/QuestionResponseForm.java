@@ -1,5 +1,7 @@
 package hpclab.kcsatspringcommunity.question.dto;
 
+import hpclab.kcsatspringcommunity.question.domain.Choice;
+import hpclab.kcsatspringcommunity.question.domain.Question;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,4 +31,15 @@ public class QuestionResponseForm {
     private LocalDateTime createdDate;
 
     private Long shareCounter;
+
+    @Builder
+    public QuestionResponseForm(Question question) {
+        this.qId = question.getId();
+        this.questionType = question.getType().getKrName();
+        this.title = question.getTitle();
+        this.mainText = question.getMainText();
+        this.choices = question.getChoices().stream().map(Choice::getChoice).toList();
+        this.createdDate = question.getCreatedDate();
+        this.shareCounter = question.getShareCounter();
+    }
 }

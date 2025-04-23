@@ -3,6 +3,9 @@ package hpclab.kcsatspringcommunity;
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignInForm;
 import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
+import hpclab.kcsatspringcommunity.exception.ApiException;
+import hpclab.kcsatspringcommunity.exception.ApiResponse;
+import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,13 +37,14 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public String login(MemberSignInForm form) {
-        Member member = memberRepository.findByEmail(form.getUserEmail()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        Member member = memberRepository.findByEmail(form.getUserEmail())
+                .orElseThrow(() -> new ApiException(ErrorCode.LOGIN_FAILED));
 
         String encodedPassword = member.getPassword();
         String rawPassword = form.getPassword();
 
         if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
-            throw new IllegalArgumentException("잘못된 비밀번호입니다.");
+            throw new ApiException(ErrorCode.LOGIN_FAILED);
         }
 
         return jwtUtil.generateToken(member.getEmail(), member.getUsername(), member.getRole());
