@@ -1,5 +1,7 @@
 package hpclab.kcsatspringcommunity.community.dto;
 
+import hpclab.kcsatspringcommunity.community.domain.Post;
+import hpclab.kcsatspringcommunity.community.service.PostService;
 import lombok.Builder;
 import lombok.Data;
 
@@ -46,4 +48,10 @@ public class PostDetailForm {
      * 댓글 각각의 비추천수
      */
     private List<String> commentsDownVoteCounter;
+
+    @Builder
+    public PostDetailForm(Post post, Long viewCount) {
+        this.post = new PostResponseForm(post, viewCount);
+        this.comments = post.getComment().stream().map(CommentResponseForm::new).toList();
+    }
 }

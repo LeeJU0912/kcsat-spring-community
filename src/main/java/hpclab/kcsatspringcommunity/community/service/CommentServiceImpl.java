@@ -7,8 +7,6 @@ import hpclab.kcsatspringcommunity.community.domain.Post;
 import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.CommentWriteForm;
 import hpclab.kcsatspringcommunity.community.repository.CommentRepository;
-import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
-import hpclab.kcsatspringcommunity.community.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -35,8 +33,8 @@ import static java.lang.Math.min;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
-    private final MemberRepository memberRepository;
-    private final PostRepository postRepository;
+    private final MemberService memberService;
+    private final PostService postService;
     private final CommentRepository commentRepository;
 
     private final RedisTemplate<String, String> redisTemplate;
@@ -44,10 +42,8 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     @Override
     public Long writeComment(CommentWriteForm commentWriteForm, Long pId, String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-        Post post = postRepository.findById(pId)
-                .orElseThrow(() -> new IllegalArgumentException("찾을 수 없는 게시물입니다."));
+        Member member = memberService.findMemberByEmail(email);
+        Post post = postService.getPost(pId);
 
         Comment comment = Comment.builder()
                 .content(commentWriteForm.getContent())
@@ -65,8 +61,7 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentResponseForm> getHotComments(Long pId) {
         List<CommentResponseForm> hotComments = new ArrayList<>();
 
-        Post post = postRepository.findByIdWithComments(pId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
+        Post post = postService.getPost(pId);
 
         List<CommentsSort> commentsSort = new ArrayList<>();
         post.getComment().forEach(comment -> {

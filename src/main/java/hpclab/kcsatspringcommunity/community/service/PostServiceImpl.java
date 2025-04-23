@@ -3,7 +3,6 @@ package hpclab.kcsatspringcommunity.community.service;
 import hpclab.kcsatspringcommunity.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.domain.Post;
-import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostWriteForm;
@@ -123,14 +122,9 @@ public class PostServiceImpl implements PostService {
 
     @Transactional(readOnly = true)
     @Override
-    public PostDetailForm getPost(Long pId) {
-        Post post = postRepository.findByIdWithComments(pId)
+    public Post getPost(Long pId) {
+        return postRepository.findByIdWithComments(pId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시물입니다."));
-
-        return PostDetailForm.builder()
-                .post(new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId()))))
-                .comments(post.getComment().stream().map(CommentResponseForm::new).toList())
-                .build();
     }
 
     @Transactional(readOnly = true)

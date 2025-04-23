@@ -1,5 +1,6 @@
 package hpclab.kcsatspringcommunity.community.service;
 
+import hpclab.kcsatspringcommunity.community.domain.Post;
 import hpclab.kcsatspringcommunity.community.dto.PostDetailForm;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.PostWriteForm;
@@ -72,9 +73,9 @@ public interface PostService {
      * pId에 맞는 게시글을 조회하는 메서드입니다.
      *
      * @param pId 게시글 ID
-     * @return 게시글 상세 정보를 반환합니다.
+     * @return 게시글 엔티티 객체 데이터를 반환합니다.
      */
-    PostDetailForm getPost(Long pId);
+    Post getPost(Long pId);
 
     /**
      * pId에 맞는 게시글을 제출한 양식에 맞게 수정하는 메서드입니다.
