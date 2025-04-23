@@ -135,7 +135,7 @@ public class BoardController {
         postService.increasePostViewCount(pId, userEmail);
 
         try {
-            PostDetailForm post = postService.getPost(pId);
+            PostDetailForm post = new PostDetailForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
 
             List<CommentResponseForm> hotComments = commentService.getHotComments(pId);
             post.setHotComments(hotComments);
@@ -178,7 +178,7 @@ public class BoardController {
      * @param pId 게시글 ID
      * @return 게시글 추천 수를 반환합니다.
      */
-    @GetMapping("/api/community/board/post/{pId}/postUpVote")
+    @GetMapping("/api/community/board/post/{pId}/vote/up")
     public ResponseEntity<String> getUpVotePost(@PathVariable Long pId) {
         return ResponseEntity.ok(postService.getIncreasePostVoteCount(pId));
     }
@@ -189,7 +189,8 @@ public class BoardController {
      *
      * @param pId 게시글 ID
      * @return 게시글 비추천 수를 반환합니다.
-     */    @GetMapping("/api/community/board/post/{pId}/postDownVote")
+     */
+    @GetMapping("/api/community/board/post/{pId}/vote/down")
     public ResponseEntity<String> getDownVotePost(@PathVariable Long pId) {
         return ResponseEntity.ok(postService.getDecreasePostVoteCount(pId));
     }
@@ -203,7 +204,7 @@ public class BoardController {
      * @param pId 게시글 ID
      * @return 게시글 추천 수를 반환합니다.
      */
-    @PostMapping("/api/community/board/post/{pId}/postUpVote")
+    @PostMapping("/api/community/board/post/{pId}/vote/up")
     public ResponseEntity<String> upVotePost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
         return ResponseEntity.ok(postService.increasePostVoteCount(pId, userEmail));
@@ -218,7 +219,7 @@ public class BoardController {
      * @param pId 게시글 ID
      * @return 게시글 비추천 수를 반환합니다.
      */
-    @PostMapping("/api/community/board/post/{pId}/postDownVote")
+    @PostMapping("/api/community/board/post/{pId}/vote/down")
     public ResponseEntity<String> downVotePost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
         return ResponseEntity.ok(postService.decreasePostVoteCount(pId, userEmail));
@@ -232,13 +233,13 @@ public class BoardController {
      * @param form 등록 게시글 정보가 담긴 객체
      * @return 게시글을 저장하고 해당 게시글 상세 정보를 반환합니다.
      */
-    @PostMapping("/api/community/board/post/new")
+    @PostMapping("/api/community/board/post")
     public ResponseEntity<PostDetailForm> writePost(@RequestHeader(AUTHORIZATION) String token, @RequestBody PostWriteForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
             Long pId = postService.savePost(form, userEmail);
-            return ResponseEntity.ok(postService.getPost(pId));
+            return ResponseEntity.ok(new PostDetailForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId))));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
@@ -254,13 +255,13 @@ public class BoardController {
      * @param pId 게시글 ID
      * @return 게시글 권한이 확인되면 ok, 그렇지 않으면 BAD_REQUEST 발생.
      */
-    @GetMapping("/api/community/board/post/{pId}/update")
+    @GetMapping("/api/community/board/post/{pId}")
     public ResponseEntity<String> updateBoardForm(@RequestHeader(AUTHORIZATION) String token,
                                                   @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
-            PostDetailForm post = postService.getPost(pId);
+            PostDetailForm post = new PostDetailForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
 
             if (!userEmail.equals(post.getPost().getEmail())) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("error");
@@ -280,14 +281,14 @@ public class BoardController {
      * @param form 수정 사항이 담긴 DTO 객체
      * @return 수정된 게시글 상세 정보를 담아 반환합니다.
      */
-    @PutMapping("/api/community/board/post/{pId}/update")
+    @PutMapping("/api/community/board/post/{pId}")
     public ResponseEntity<PostDetailForm> updateBoard(@RequestHeader(AUTHORIZATION) String token,
                                                       @PathVariable Long pId,
                                                       @RequestBody PostWriteForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
-            if (!userEmail.equals(postService.getPost(pId).getPost().getEmail())) {
+            if (!userEmail.equals(postService.getPost(pId).getMember().getEmail())) {
                 throw new IllegalArgumentException("error");
             }
 
@@ -305,12 +306,12 @@ public class BoardController {
      * @param pId 게시글 ID
      * @return 권한이 확인되었고 정상적으로 삭제된다면 ok, 이외의 경우에는 BAD_REQUEST 발생.
      */
-    @DeleteMapping("/api/community/board/post/{pId}/remove")
-    public ResponseEntity<String> removeBoardAuth(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    @DeleteMapping("/api/community/board/post/{pId}")
+    public ResponseEntity<String> removeBoard(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         try {
-            PostDetailForm post = postService.getPost(pId);
+            PostDetailForm post = new PostDetailForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
 
             if (!userEmail.equals(post.getPost().getEmail())) {
                 throw new IllegalArgumentException("error");
@@ -332,7 +333,7 @@ public class BoardController {
      * @param qId 게시글 ID
      * @return 게시글에 첨부된 문제가 정상적으로 저장되면 ok, 그렇지 않으면 BAD_REQUEST 반환.
      */
-    @PostMapping("/api/community/board/post/{qId}/save")
+    @PostMapping("/api/community/board/post/{qId}/question")
     public ResponseEntity<String> saveQuestionFromPost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long qId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -349,7 +350,7 @@ public class BoardController {
      * @param token 회원 JWT 토큰
      * @return 회원이 저장한 모든 문제들의 리스트를 보여줍니다.
      */
-    @GetMapping("/api/community/board/post/myQuestions")
+    @GetMapping("/api/community/board/post/uploadQuestion")
     public ResponseEntity<BookResponseForm> getUserQuestions(@RequestHeader(AUTHORIZATION) String token) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -414,7 +415,7 @@ public class BoardController {
      * @param cId 댓글 ID
      * @return 추천한 댓글의 현재 추천수를 반환합니다.
      */
-    @PostMapping("/api/community/board/comment/{cId}/commentUpVote")
+    @PostMapping("/api/community/board/comment/{cId}/vote/up")
     public ResponseEntity<String> upVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -430,7 +431,7 @@ public class BoardController {
      * @param cId 댓글 ID
      * @return 추천한 댓글의 현재 비추천수를 반환합니다.
      */
-    @PostMapping("/api/community/board/comment/{cId}/commentDownVote")
+    @PostMapping("/api/community/board/comment/{cId}/vote/down")
     public ResponseEntity<String> downVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -447,7 +448,7 @@ public class BoardController {
      * @param cId 댓글 ID
      * @return 댓글 삭제가 정상적으로 되었다면 ok, 그렇지 않다면 BAD_REQUEST 반환.
      */
-    @DeleteMapping("/api/community/board/comment/{cId}/remove")
+    @DeleteMapping("/api/community/board/comment/{cId}")
     public ResponseEntity<String> removeComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
