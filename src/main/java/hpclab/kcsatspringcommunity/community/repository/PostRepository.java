@@ -16,11 +16,14 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
 
     /**
      * 게시글 ID에 대해 게시글 상세 정보를 가져웁니다.
-     * Fetch join 적용으로 post 가져올 때 comment도 같이 가져오도록 합니다. (N+1 문제 방지)
+     * Fetch join 적용으로 post 가져올 때 member, question도 같이 가져오도록 합니다. (N+1 문제 방지)
      *
      * @param postId 게시글 ID
      * @return 게시글 상세 정보
      */
-    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.comment WHERE p.pId = :postId")
+    @Query("SELECT DISTINCT p FROM Post p " +
+            "LEFT JOIN FETCH p.member m " +
+            "LEFT JOIN FETCH p.question q " +
+            "WHERE p.pId = :postId")
     Optional<Post> findByIdWithComments(@Param("postId") Long postId);
 }
