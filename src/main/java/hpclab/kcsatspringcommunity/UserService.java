@@ -1,6 +1,7 @@
 package hpclab.kcsatspringcommunity;
 
 import hpclab.kcsatspringcommunity.community.domain.Member;
+import hpclab.kcsatspringcommunity.community.domain.Role;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignInForm;
 import hpclab.kcsatspringcommunity.community.repository.MemberRepository;
 import hpclab.kcsatspringcommunity.exception.ApiException;
@@ -50,17 +51,24 @@ public class UserService {
         return jwtUtil.generateToken(member.getEmail(), member.getUsername(), member.getRole());
     }
 
-    public void logout(String token, long expiration) {
-        // 토큰을 블랙리스트에 저장 (만료 시간까지 유지)
-        redisTemplate.opsForValue().set(BLACKLIST_PREFIX + token, "true", expiration, TimeUnit.MILLISECONDS);
+    /**
+     * 게스트 로그인 처리 메서드입니다.
+     * @return JWT 토큰 발급
+     */
+    public String guestLogin() {
+        return jwtUtil.generateToken(null, null, Role.ROLE_GUEST);
     }
 
-    public void removeFromBlacklist(String token) {
-        redisTemplate.delete(BLACKLIST_PREFIX + token); // Redis에서 블랙리스트 삭제
+    public void logout(String token) {
+        String noHeaderToken = token.replace("Bearer ", "");
+
+        // 토큰을 블랙리스트에 저장 (만료 시간까지 유지)
+        redisTemplate.opsForValue()
+                .set(BLACKLIST_PREFIX + noHeaderToken, "true", jwtUtil.getExpiration(token), TimeUnit.MILLISECONDS);
     }
 
     public boolean isTokenBlacklisted(String token) {
-        String noHeaderToken = token.split(" ")[1];
+        String noHeaderToken = token.replace("Bearer ", "");
         return redisTemplate.hasKey(BLACKLIST_PREFIX + noHeaderToken);
     }
 }

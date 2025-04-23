@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static hpclab.kcsatspringcommunity.JWTUtil.AUTHORIZATION;
 import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
 import static hpclab.kcsatspringcommunity.exception.SuccessCode.POST_DELETE_SUCCESS;
 
@@ -133,7 +133,7 @@ public class PostController {
      * @return 게시글 상세 정보를 반환합니다.
      */
     @GetMapping("/api/community/board/post/{pId}")
-    public ResponseEntity<ApiResponse<PostResponseForm>> board(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    public ResponseEntity<ApiResponse<PostResponseForm>> board(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         postService.increasePostViewCount(pId, userEmail);
@@ -176,7 +176,7 @@ public class PostController {
      * @return 게시글 추천 수를 반환합니다.
      */
     @PostMapping("/api/community/board/post/{pId}/vote/up")
-    public ResponseEntity<ApiResponse<String>> upVotePost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    public ResponseEntity<ApiResponse<String>> upVotePost(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
         return ResponseEntity.ok(new ApiResponse<>(true, postService.increasePostVoteCount(pId, userEmail), null, null));
     }
@@ -191,7 +191,7 @@ public class PostController {
      * @return 게시글 비추천 수를 반환합니다.
      */
     @PostMapping("/api/community/board/post/{pId}/vote/down")
-    public ResponseEntity<ApiResponse<String>> downVotePost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    public ResponseEntity<ApiResponse<String>> downVotePost(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
         return ResponseEntity.ok(new ApiResponse<>(true, postService.decreasePostVoteCount(pId, userEmail), null, null));
     }
@@ -205,7 +205,7 @@ public class PostController {
      * @return 게시글을 저장하고 해당 게시글 상세 정보를 반환합니다.
      */
     @PostMapping("/api/community/board/post")
-    public ResponseEntity<ApiResponse<PostResponseForm>> writePost(@RequestHeader(AUTHORIZATION) String token, @RequestBody PostWriteForm form) {
+    public ResponseEntity<ApiResponse<PostResponseForm>> writePost(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody PostWriteForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         Long pId = postService.savePost(form, userEmail);
@@ -224,7 +224,7 @@ public class PostController {
      * @return 수정된 게시글 상세 정보를 담아 반환합니다.
      */
     @PutMapping("/api/community/board/post/{pId}")
-    public ResponseEntity<ApiResponse<PostResponseForm>> updateBoard(@RequestHeader(AUTHORIZATION) String token,
+    public ResponseEntity<ApiResponse<PostResponseForm>> updateBoard(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                       @PathVariable Long pId,
                                                       @RequestBody PostWriteForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
@@ -246,7 +246,7 @@ public class PostController {
      * @return 권한이 확인되었고 정상적으로 삭제된다면 ok, 이외의 경우에는 BAD_REQUEST 발생.
      */
     @DeleteMapping("/api/community/board/post/{pId}")
-    public ResponseEntity<ApiResponse<String>> removeBoard(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long pId) {
+    public ResponseEntity<ApiResponse<String>> removeBoard(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         PostResponseForm post = new PostResponseForm(postService.getPost(pId), Long.parseLong(postService.getPostViewCount(pId)));
@@ -269,7 +269,7 @@ public class PostController {
      * @return 게시글에 첨부된 문제가 정상적으로 저장되면 ok, 그렇지 않으면 BAD_REQUEST 반환.
      */
     @PostMapping("/api/community/board/post/{qId}/question")
-    public ResponseEntity<ApiResponse<String>> saveQuestionFromPost(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long qId) {
+    public ResponseEntity<ApiResponse<String>> saveQuestionFromPost(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long qId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         return ResponseEntity.ok(new ApiResponse<>(true, postService.saveQuestionFromPost(qId, userEmail).toString(), null, null));
@@ -283,7 +283,7 @@ public class PostController {
      * @return 회원이 저장한 모든 문제들의 리스트를 보여줍니다.
      */
     @GetMapping("/api/community/board/post/uploadQuestion")
-    public ResponseEntity<ApiResponse<BookResponseForm>> getUserQuestions(@RequestHeader(AUTHORIZATION) String token) {
+    public ResponseEntity<ApiResponse<BookResponseForm>> getUserQuestions(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         return ResponseEntity.ok(new ApiResponse<>(true, new BookResponseForm(bookService.findBook(userEmail)), null, null));

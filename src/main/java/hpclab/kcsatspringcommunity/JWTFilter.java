@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,17 +24,18 @@ import java.util.Date;
  * JWT 인증 필터 클래스입니다.
  * 매 요청마다 이 클래스의 필터를 통과하여 올바른 사용자인지 검증합니다.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
+    private final UserService userService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        // HTTP 헤더의 AUTHORIZATION 항목 추출
-        final String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
         // Options Preflight 요청인 경우, 필터 생략
         if (request.getMethod().equals(HttpMethod.OPTIONS.name())) {
@@ -50,23 +52,29 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
+        // HTTP 헤더의 AUTHORIZATION 항목 추출
+        final String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+
         // 인증 결과가 없으면, 필터 생략
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
+        if (authorization == null) {
             filterChain.doFilter(request, response);
+            return;
+        }
+
+        String token = authorization.replace("Bearer ", "");
+
+        // Token Expired 되었는지 여부
+        if (jwtUtil.isTokenExpired(token) || userService.isTokenBlacklisted(token)) {
+            log.error("만료되었거나 블랙리스트에 포함된 토큰입니다.");
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\": \"Token expired or invalidated\"}");
             return;
         }
 
         // Token에서 Claims 꺼내기
         Claims claims = jwtUtil.getClaims(authorization);
-
-        // Token Expired 되었는지 여부 || userService.isTokenBlacklisted(authorization)
-        if (claims.getExpiration().before(new Date())) {
-            logger.error("Token 이 만료되었습니다.");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"message\": \"Token expired\"}");
-            return;
-        }
 
         // 회원 email 아이디와 권한을 Token에서 꺼내기
         String userEmail = claims.get("userEmail", String.class);

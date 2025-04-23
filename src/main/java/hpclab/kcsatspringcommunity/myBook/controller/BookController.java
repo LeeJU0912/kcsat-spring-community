@@ -12,11 +12,11 @@ import hpclab.kcsatspringcommunity.question.dto.QuestionDetailsDto;
 import hpclab.kcsatspringcommunity.question.dto.QuestionDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static hpclab.kcsatspringcommunity.JWTUtil.AUTHORIZATION;
 import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
 
 /**
@@ -40,7 +40,7 @@ public class BookController {
      * @return MyBook 상세 정보를 반환합니다.
      */
     @GetMapping("/api/community/myBook")
-    public ResponseEntity<ApiResponse<BookResponseForm>> myQuestion(@RequestHeader(AUTHORIZATION) String token) {
+    public ResponseEntity<ApiResponse<BookResponseForm>> myQuestion(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         return ResponseEntity.ok(new ApiResponse<>(true, new BookResponseForm(bookService.findBook(userEmail)), null, null));
@@ -54,7 +54,7 @@ public class BookController {
      * @return 문제 저장에 성공하면 OK로 응답합니다.
      */
     @PostMapping("/api/community/question/save")
-    public ResponseEntity<ApiResponse<String>> saveQuestion(@RequestHeader(AUTHORIZATION) String token, @RequestBody QuestionDto form) {
+    public ResponseEntity<ApiResponse<String>> saveQuestion(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody QuestionDto form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         Question question = Question.builder()

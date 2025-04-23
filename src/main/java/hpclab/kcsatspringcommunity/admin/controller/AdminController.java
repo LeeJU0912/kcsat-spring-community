@@ -16,12 +16,12 @@ import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static hpclab.kcsatspringcommunity.JWTUtil.AUTHORIZATION;
 import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
 
 /**
@@ -120,7 +120,7 @@ public class AdminController {
      * @return 보낸 문제에 대한 신고자, 문제 세부 사항 등 결과 객체
      */
     @PostMapping("/api/community/result/junk")
-    public ResponseEntity<ApiResponse<UserRequestResponseForm>> filterQuestion(@RequestHeader(AUTHORIZATION) String token, @RequestBody QuestionDto form) {
+    public ResponseEntity<ApiResponse<UserRequestResponseForm>> filterQuestion(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody QuestionDto form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         Question question = Question
@@ -150,7 +150,7 @@ public class AdminController {
      * @return 보낸 문제에 대한 신고자, 문제 세부 사항 등 결과 객체
      */
     @PostMapping("/api/community/improving")
-    public ResponseEntity<ApiResponse<UserRequestResponseForm>> requestImproving(@RequestHeader(AUTHORIZATION) String token, @RequestBody UserRequestRequestForm form) {
+    public ResponseEntity<ApiResponse<UserRequestResponseForm>> requestImproving(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody UserRequestRequestForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         UserRequestResponseForm userRequestResponse = userRequestService.updateUserRequestForm(userRequestService.getImprovingForm(form, userEmail), userEmail);

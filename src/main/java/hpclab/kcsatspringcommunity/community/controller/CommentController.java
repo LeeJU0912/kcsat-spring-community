@@ -8,11 +8,11 @@ import hpclab.kcsatspringcommunity.exception.ApiResponse;
 import hpclab.kcsatspringcommunity.exception.SuccessCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static hpclab.kcsatspringcommunity.JWTUtil.AUTHORIZATION;
 import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
 import static hpclab.kcsatspringcommunity.exception.SuccessCode.COMMENT_DELETE_SUCCESS;
 
@@ -55,7 +55,7 @@ public class CommentController {
      * @return 댓글 등록이 잘 되었다면 ok를 반환합니다.
      */
     @PostMapping("/api/community/board/post/{pId}/comment")
-    public ResponseEntity<ApiResponse<String>> writeComment(@RequestHeader(AUTHORIZATION) String token,
+    public ResponseEntity<ApiResponse<String>> writeComment(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                @PathVariable Long pId,
                                                @RequestBody CommentWriteForm form) {
 
@@ -74,7 +74,7 @@ public class CommentController {
      * @return 추천한 댓글의 현재 추천수를 반환합니다.
      */
     @PostMapping("/api/community/board/comment/{cId}/vote/up")
-    public ResponseEntity<ApiResponse<String>> upVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
+    public ResponseEntity<ApiResponse<String>> upVoteComment(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long cId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         String commentCount = commentService.increaseCommentCount(cId, userEmail);
@@ -90,7 +90,7 @@ public class CommentController {
      * @return 추천한 댓글의 현재 비추천수를 반환합니다.
      */
     @PostMapping("/api/community/board/comment/{cId}/vote/down")
-    public ResponseEntity<ApiResponse<String>> downVoteComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
+    public ResponseEntity<ApiResponse<String>> downVoteComment(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long cId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         String commentCount = commentService.decreaseCommentCount(cId, userEmail);
@@ -107,7 +107,7 @@ public class CommentController {
      * @return 댓글 삭제가 정상적으로 되었다면 ok, 그렇지 않다면 BAD_REQUEST 반환.
      */
     @DeleteMapping("/api/community/board/comment/{cId}")
-    public ResponseEntity<ApiResponse<Void>> removeComment(@RequestHeader(AUTHORIZATION) String token, @PathVariable Long cId) {
+    public ResponseEntity<ApiResponse<Void>> removeComment(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long cId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
         commentService.checkCommentWriter(userEmail, cId);

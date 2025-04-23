@@ -9,13 +9,16 @@ import hpclab.kcsatspringcommunity.exception.SuccessCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import static hpclab.kcsatspringcommunity.exception.SuccessCode.LOGIN_SUCCESS;
+import static hpclab.kcsatspringcommunity.exception.SuccessCode.SIGN_OUT_SUCCESS;
 
 /**
  * 회원 정보를 관리하는 컨트롤러 클래스입니다.
@@ -62,14 +65,9 @@ public class MemberController {
         return ResponseEntity.ok(token);
     }
 
-//    @PostMapping("/api/community/logout")
-//    public ResponseEntity<String> logout(@RequestHeader("Authorization") String token) {
-//        String jwtToken = token.split(" ")[1];
-//        long expiration = jwtUtil.getExpiration(jwtToken);
-//
-//        // JWT 블랙리스트에 추가
-//        userService.logout(jwtToken, expiration);
-//
-//        return ResponseEntity.ok("로그아웃 되었습니다.");
-//    }
+    @PostMapping("/api/community/open/signOut")
+    public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        userService.logout(token);
+        return ResponseEntity.ok(new ApiResponse<>(true, null, SIGN_OUT_SUCCESS.getCode(), SIGN_OUT_SUCCESS.getMessage()));
+    }
 }
