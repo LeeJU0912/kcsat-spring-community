@@ -1,9 +1,11 @@
 package hpclab.kcsatspringcommunity.questionRank.service;
 
+import hpclab.kcsatspringcommunity.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionResponseForm;
 import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
+import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,8 +26,9 @@ import static java.lang.Math.min;
 @RequiredArgsConstructor
 public class QuestionRankServiceImpl implements QuestionRankService {
 
-    private final RedisTemplate<String, String> redisTemplate;
     private final QuestionJPARepository questionJPARepository;
+
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Transactional(readOnly = true)
     @Override
@@ -33,7 +36,7 @@ public class QuestionRankServiceImpl implements QuestionRankService {
         List<QuestionResponseForm> questions = new ArrayList<>();
 
         for (int i = 1; i <= 5; i++) {
-            String qIdString = redisTemplate.opsForValue().get("question:rank:" + i);
+            String qIdString = redisTemplate.opsForValue().get(RedisKeyUtil.questionRank(i));
             if (qIdString == null) {
                 break;
             }
@@ -70,7 +73,7 @@ public class QuestionRankServiceImpl implements QuestionRankService {
                         redditRankingAlgorithm(Double.valueOf(o1.getShareCounter()), o1.getCreatedDate())));
 
         for (int i = 1; i <= min(questions.size(), 5); i++) {
-            redisTemplate.opsForValue().set("question:rank:" + i, String.valueOf(questions.get(i - 1).getId()));
+            redisTemplate.opsForValue().set(RedisKeyUtil.questionRank(i), String.valueOf(questions.get(i - 1).getId()));
         }
     }
 

@@ -1,5 +1,6 @@
 package hpclab.kcsatspringcommunity.myBook.service;
 
+import hpclab.kcsatspringcommunity.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.myBook.domain.Book;
 import hpclab.kcsatspringcommunity.myBook.domain.BookQuestion;
 import hpclab.kcsatspringcommunity.myBook.repository.BookQuestionRepository;
@@ -45,8 +46,8 @@ public class BookQuestionServiceImpl implements BookQuestionService {
         Question question = questionService.getQuestion(qId);
         Book book = bookService.findBook(userEmail);
 
-        if (redisTemplate.opsForValue().get("question:" + userEmail + ":isSaved:" + qId) == null) {
-            redisTemplate.opsForValue().set("question:" + userEmail + ":isSaved:" + qId, "1");
+        if (redisTemplate.opsForValue().get(RedisKeyUtil.questionSavedCheck(userEmail, qId)) == null) {
+            redisTemplate.opsForValue().set(RedisKeyUtil.questionSavedCheck(userEmail, qId), "1");
             question.upShareCounter();
             bookQuestionRepository.save(new BookQuestion(book, question));
         }

@@ -1,5 +1,6 @@
 package hpclab.kcsatspringcommunity.community.service;
 
+import hpclab.kcsatspringcommunity.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.domain.Post;
 import hpclab.kcsatspringcommunity.community.dto.CommentResponseForm;
@@ -156,9 +157,9 @@ public class PostServiceImpl implements PostService {
     @Override
     public String setPostCount(Long pId) {
 
-        String viewCount = "post:viewCount:" + pId;
-        String upVote = "post:upVote:" + pId;
-        String downVote = "post:downVote:" + pId;
+        String viewCount = RedisKeyUtil.postViewCount(pId);
+        String upVote = RedisKeyUtil.postUpVote(pId);
+        String downVote = RedisKeyUtil.postDownVote(pId);
 
         redisTemplate.opsForValue().set(viewCount, "0");
         redisTemplate.opsForValue().set(upVote, "0");
@@ -169,8 +170,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public String increasePostViewCount(Long pId, String userEmail) {
-        String viewCount = "post:viewCount:" + pId;
-        String user = "post:userView:" + pId + ":" + userEmail;
+        String viewCount = RedisKeyUtil.postViewCount(pId);
+        String user = RedisKeyUtil.postUserCheck(pId, userEmail);
 
         if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(viewCount);
@@ -182,15 +183,15 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public String getPostViewCount(Long pId) {
-        return redisTemplate.opsForValue().get("post:viewCount:" + pId);
+        return redisTemplate.opsForValue().get(RedisKeyUtil.postViewCount(pId));
     }
 
     @Transactional
     @Override
     public String increasePostVoteCount(Long pId, String userEmail) {
 
-        String upVote = "post:upVote:" + pId;
-        String user = "post:userVote:" + pId + ":" + userEmail;
+        String upVote = RedisKeyUtil.postUpVote(pId);
+        String user = RedisKeyUtil.postUserCheck(pId, userEmail);
 
         if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(upVote);
@@ -218,8 +219,8 @@ public class PostServiceImpl implements PostService {
     @Override
     public String decreasePostVoteCount(Long pId, String userEmail) {
 
-        String downVote = "post:downVote:" + pId;
-        String user = "post:userVote:" + pId + ":" + userEmail;
+        String downVote = RedisKeyUtil.postDownVote(pId);
+        String user = RedisKeyUtil.postUserCheck(pId, userEmail);
 
         if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(downVote);
@@ -231,12 +232,12 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public String getIncreasePostVoteCount(Long pId) {
-        return redisTemplate.opsForValue().get("post:upVote:" + pId);
+        return redisTemplate.opsForValue().get(RedisKeyUtil.postUpVote(pId));
     }
 
     @Override
     public String getDecreasePostVoteCount(Long pId) {
-        return redisTemplate.opsForValue().get("post:downVote:" + pId);
+        return redisTemplate.opsForValue().get(RedisKeyUtil.postDownVote(pId));
     }
 
 

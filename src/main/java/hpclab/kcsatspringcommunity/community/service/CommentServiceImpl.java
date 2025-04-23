@@ -1,5 +1,6 @@
 package hpclab.kcsatspringcommunity.community.service;
 
+import hpclab.kcsatspringcommunity.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.community.domain.Comment;
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.domain.Post;
@@ -69,8 +70,8 @@ public class CommentServiceImpl implements CommentService {
 
         List<CommentsSort> commentsSort = new ArrayList<>();
         post.getComment().forEach(comment -> {
-            String upVote = redisTemplate.opsForValue().get("comment:" + comment.getCId() + ":upVote");
-            String downVote = redisTemplate.opsForValue().get("comment:" + comment.getCId() + ":downVote");
+            String upVote = redisTemplate.opsForValue().get(RedisKeyUtil.commentUpVote(comment.getCId()));
+            String downVote = redisTemplate.opsForValue().get(RedisKeyUtil.commentDownVote(comment.getCId()));
 
             try {
                 long calc = Long.parseLong(upVote) - Long.parseLong(downVote);
@@ -133,8 +134,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public String setCommentCount(Long cId) {
 
-        String upVote = "comment:" + cId + ":upVote";
-        String downVote = "comment:" + cId + ":downVote";
+        String upVote = RedisKeyUtil.commentUpVote(cId);
+        String downVote = RedisKeyUtil.commentDownVote(cId);
+
         redisTemplate.opsForValue().set(upVote, "0");
         redisTemplate.opsForValue().set(downVote, "0");
 
@@ -144,8 +146,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public String increaseCommentCount(Long cId, String userEmail) {
 
-        String upVote = "comment:" + cId + ":upVote";
-        String user = "comment:" + cId + ":user:" + userEmail;
+        String upVote = RedisKeyUtil.commentUpVote(cId);
+        String user = RedisKeyUtil.commentUserCheck(cId, userEmail);
 
         if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(upVote);
@@ -159,8 +161,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public String decreaseCommentCount(Long commentId, String userEmail) {
 
-        String downVote = "comment:" + commentId + ":downVote";
-        String user = "comment:" + commentId + ":user:" + userEmail;
+        String downVote = RedisKeyUtil.commentDownVote(commentId);
+        String user = RedisKeyUtil.commentUserCheck(commentId, userEmail);
 
         if (!redisTemplate.hasKey(user)) {
             redisTemplate.opsForValue().increment(downVote);
@@ -172,11 +174,11 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public String getIncreaseCommentCount(Long commentId) {
-        return redisTemplate.opsForValue().get("comment:" + commentId + ":upVote");
+        return redisTemplate.opsForValue().get(RedisKeyUtil.commentUpVote(commentId));
     }
 
     @Override
     public String getDecreaseCommentCount(Long commentId) {
-        return redisTemplate.opsForValue().get("comment:" + commentId + ":downVote");
+        return redisTemplate.opsForValue().get(RedisKeyUtil.commentDownVote(commentId));
     }
 }
