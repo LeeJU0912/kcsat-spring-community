@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.concurrent.TimeUnit;
 
 /**
- * (수정 필요)
  * 회원 인증 관련 서비스 클래스입니다.
  */
 @Service

@@ -1,5 +1,9 @@
 package hpclab.kcsatspringcommunity;
 
+
+/**
+ * Redis DB와 상호작용하는 키를 통합 관리하는 저장소 클래스입니다.
+ */
 public class RedisKeyUtil {
 
     // 댓글 관련 키

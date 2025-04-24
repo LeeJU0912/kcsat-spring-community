@@ -25,7 +25,9 @@ public class Comment extends BaseTimeEntity {
     @Column(name = "comment_id")
     private Long cId;
 
-
+    /**
+     * 게시글 ID 입니다. 댓글이 달린 게시글을 확인할 수 있습니다.
+     */
     @Column(name = "post_id", nullable = false)
     private Long pId;
 

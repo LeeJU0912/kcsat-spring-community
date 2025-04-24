@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * 댓글 상세 정보를 반환하는 DTO 클래스입니다. 주로 댓글 API 정보 반환에 쓰입니다.
+ */
 @Data
 @AllArgsConstructor
 public class CommentDetailForm {

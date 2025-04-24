@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+/**
+ * 모든 에러사항에 대해 중앙 관리하는 열거형 클래스입니다.
+ */
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {

@@ -63,6 +63,12 @@ public class MemberController {
         return ResponseEntity.ok(token);
     }
 
+    /**
+     * 로그아웃하는 메서드입니다.
+     *
+     * @param token 로그아웃 처리를 위한 JWT Token 정보입니다.
+     * @return 로그아웃에 성공하면 OK를 반환합니다.
+     */
     @PostMapping("/api/community/open/signOut")
     public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         userService.logout(token);

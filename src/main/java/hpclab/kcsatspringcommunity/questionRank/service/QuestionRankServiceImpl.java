@@ -22,6 +22,9 @@ import java.util.List;
 import static java.lang.Math.log10;
 import static java.lang.Math.min;
 
+/**
+ * 주간 문제 랭킹 로직을 구현한 클래스입니다.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
