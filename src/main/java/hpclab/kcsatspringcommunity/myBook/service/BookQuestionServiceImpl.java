@@ -1,6 +1,6 @@
 package hpclab.kcsatspringcommunity.myBook.service;
 
-import hpclab.kcsatspringcommunity.RedisKeyUtil;
+import hpclab.kcsatspringcommunity.redis.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.exception.ApiException;
 import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import hpclab.kcsatspringcommunity.myBook.domain.Book;

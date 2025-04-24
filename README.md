@@ -6,16 +6,11 @@
     - Spring Data JPA (메인 DB 송수신)
     - QueryDSL (게시판 페이지 검색 쿼리문 작성)
 3. Redis (조회수, 추천수, 캐싱용)
-4. Spring Security
-5. JWT
 
 ## 기술 이용
 1. 대부분의 데이터는 PostgreSQL을 사용하여 저장하도록 하였음.
 2. 기본적으로 JPA를 사용하여 DB 송수신을 처리함.
 3. JPA로 처리하기 어려운 쿼리문 같은 경우, QueryDSL을 사용하여 직접 SQL 형태로 설계하였음.
-4. 로그인 구현을 위해 Spring Security를 사용하였고, Only 세션 대신 JWT 토큰을 사용하여 사용자 정보를 저장하여 프론트엔드에서도 쉽게 사용자 정보 출력 로직을 구현하도록 함.
-5. Spring Security를 사용하여 Priority를 Admin, User 계층으로 나누었음.
-   - 향후 VIP 계층을 추가하여 유료 회원의 경우, Kafka AI 서버에서 생성 우선순위를 부여하는 방식도 생각 중.
 
 ## 기술 도입에 대한 생각
 1. 조회수, 추천수 또는 캐싱과 같은 디스크 I/O 요청이 잦지만, 데이터 정합성 보장 중요도가 상대적으로 떨어지는 데이터는 Redis In-Memory DB에 저장하도록 하여 지연시간을 줄였음.

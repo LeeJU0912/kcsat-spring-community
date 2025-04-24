@@ -11,7 +11,7 @@ import java.util.Optional;
 /**
  * 문제에 대한 DB 상호작용을 하는 Spring Data JPA 인터페이스입니다.
  */
-public interface QuestionJPARepository extends JpaRepository<Question, Long> {
+public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     /**
      * 문제 공유수가 limit 이상인 문제들만 조회하는 메서드입니다.

@@ -1,10 +1,11 @@
 package hpclab.kcsatspringcommunity.community.controller;
 
-import hpclab.kcsatspringcommunity.JWTUtil;
+import hpclab.kcsatspringcommunity.util.JWTUtil;
 import hpclab.kcsatspringcommunity.UserService;
 import hpclab.kcsatspringcommunity.admin.dto.UserRequestRequestForm;
 import hpclab.kcsatspringcommunity.admin.dto.UserRequestResponseForm;
 import hpclab.kcsatspringcommunity.admin.service.UserRequestService;
+import hpclab.kcsatspringcommunity.community.dto.MemberAuthResponseForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignInForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignUpForm;
 import hpclab.kcsatspringcommunity.community.service.MemberService;
@@ -20,9 +21,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
+import static hpclab.kcsatspringcommunity.util.JWTUtil.USER_EMAIL;
 import static hpclab.kcsatspringcommunity.exception.SuccessCode.LOGIN_SUCCESS;
-import static hpclab.kcsatspringcommunity.exception.SuccessCode.SIGN_OUT_SUCCESS;
 
 /**
  * 회원 정보를 관리하는 컨트롤러 클래스입니다.
@@ -52,7 +52,7 @@ public class MemberController {
      * @param memberSignUpForm 회원가입을 위한 email 아이디, 비밀번호 양식입니다.
      * @return 회원가입이 정상적으로 이루어지면 ok, 그렇지 않으면 BAD_REQUEST 반환.
      */
-    @PostMapping("/api/member/open/signUp")
+    @PostMapping("/open/signUp")
     public ResponseEntity<ApiResponse<Void>> signup(@RequestBody @Valid MemberSignUpForm memberSignUpForm) {
         memberService.signUp(memberSignUpForm);
 
@@ -66,13 +66,13 @@ public class MemberController {
      * @param form 로그인을 위한 email 아이디, 비밀번호 양식입니다.
      * @return 로그인에 성공하면 JWT 토큰을 반환하고, 실패하면 UNAUTHORIZED를 반환합니다.
      */
-    @PostMapping("/internal/member/signIn")
-    public ResponseEntity<String> signIn(@RequestBody MemberSignInForm form) {
+    @PostMapping("/internal/signIn")
+    public ResponseEntity<ApiResponse<MemberAuthResponseForm>> signIn(@RequestBody @Valid MemberSignInForm form) {
         // 로그인 시도 및 토큰 발급
-        String token = userService.login(form);
+        MemberAuthResponseForm member = userService.login(form);
 
         // JWT 토큰을 응답으로 반환
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(new ApiResponse<>(true, member, null, null));
     }
 
 

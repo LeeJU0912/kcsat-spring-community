@@ -1,4 +1,4 @@
-package hpclab.kcsatspringcommunity;
+package hpclab.kcsatspringcommunity.redis;
 
 
 /**
@@ -52,9 +52,6 @@ public class RedisKeyUtil {
     public static String questionRank(int rank) {
         return "question:rank:" + rank;
     }
-
-    //JWT 관련 키
-
 
     // 회원 관련 키
     public static String userIdemCheck(String email) {

@@ -1,12 +1,12 @@
 package hpclab.kcsatspringcommunity.questionRank.service;
 
-import hpclab.kcsatspringcommunity.RedisKeyUtil;
+import hpclab.kcsatspringcommunity.redis.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.exception.ApiException;
 import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import hpclab.kcsatspringcommunity.question.domain.Choice;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.dto.QuestionResponseForm;
-import hpclab.kcsatspringcommunity.question.repository.QuestionJPARepository;
+import hpclab.kcsatspringcommunity.question.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,7 +30,7 @@ import static java.lang.Math.min;
 @RequiredArgsConstructor
 public class QuestionRankServiceImpl implements QuestionRankService {
 
-    private final QuestionJPARepository questionJPARepository;
+    private final QuestionRepository questionRepository;
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -47,7 +47,7 @@ public class QuestionRankServiceImpl implements QuestionRankService {
 
             Long qId = Long.parseLong(qIdString);
 
-            Question question = questionJPARepository.findWithChoicesById(qId)
+            Question question = questionRepository.findWithChoicesById(qId)
                     .orElseThrow(() -> new ApiException(ErrorCode.QUESTION_NOT_FOUND));
 
             questions.add(QuestionResponseForm.builder()
@@ -70,7 +70,7 @@ public class QuestionRankServiceImpl implements QuestionRankService {
     public void updateQuestionRank() {
         log.info("cron update question rank");
 
-        List<Question> questions = questionJPARepository.findAllByShareCounterGreaterThan(0L);
+        List<Question> questions = questionRepository.findAllByShareCounterGreaterThan(0L);
 
         questions.sort((o1, o2) ->
                 Double.compare(redditRankingAlgorithm(Double.valueOf(o2.getShareCounter()), o2.getCreatedDate()),

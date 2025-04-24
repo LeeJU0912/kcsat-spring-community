@@ -1,6 +1,6 @@
 package hpclab.kcsatspringcommunity.myBook.controller;
 
-import hpclab.kcsatspringcommunity.JWTUtil;
+import hpclab.kcsatspringcommunity.util.JWTUtil;
 import hpclab.kcsatspringcommunity.exception.ApiResponse;
 import hpclab.kcsatspringcommunity.myBook.dto.BookResponseForm;
 import hpclab.kcsatspringcommunity.myBook.service.BookQuestionService;
@@ -16,7 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
+import static hpclab.kcsatspringcommunity.util.JWTUtil.USER_EMAIL;
 
 /**
  * 나만의 문제를 저장하는 MyBook 관련 컨트롤러 메서드입니다.

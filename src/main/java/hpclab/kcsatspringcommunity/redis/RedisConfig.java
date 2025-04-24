@@ -1,4 +1,4 @@
-package hpclab.kcsatspringcommunity;
+package hpclab.kcsatspringcommunity.redis;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

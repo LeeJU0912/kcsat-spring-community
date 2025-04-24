@@ -1,6 +1,6 @@
 package hpclab.kcsatspringcommunity.community.service;
 
-import hpclab.kcsatspringcommunity.RedisKeyUtil;
+import hpclab.kcsatspringcommunity.redis.RedisKeyUtil;
 import hpclab.kcsatspringcommunity.community.domain.Member;
 import hpclab.kcsatspringcommunity.community.domain.Post;
 import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
