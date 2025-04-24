@@ -23,6 +23,7 @@ import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
  */
 @Slf4j
 @RestController
+@RequestMapping("/api/question")
 @RequiredArgsConstructor
 public class BookController {
 
@@ -38,7 +39,7 @@ public class BookController {
      * @param token 회원 JWT 토큰
      * @return MyBook 상세 정보를 반환합니다.
      */
-    @GetMapping("/api/community/myBook")
+    @GetMapping("/myBook")
     public ResponseEntity<ApiResponse<BookResponseForm>> myQuestion(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -52,7 +53,7 @@ public class BookController {
      * @param form 문제 세부 사항 DTO Form 객체
      * @return 문제 저장에 성공하면 OK로 응답합니다.
      */
-    @PostMapping("/api/community/question/save")
+    @PostMapping("/save")
     public ResponseEntity<ApiResponse<String>> saveQuestion(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody QuestionDto form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -79,7 +80,7 @@ public class BookController {
      * @param qId 문제 ID
      * @return 문제 세부 사항을 반환합니다.
      */
-    @GetMapping("/api/community/question")
+    @GetMapping
     public ResponseEntity<ApiResponse<QuestionDetailsDto>> getQuestionById(@RequestParam Long qId) {
         Question question = questionService.getQuestion(qId);
         return ResponseEntity.ok(new ApiResponse<>(true, new QuestionDetailsDto(question), null, null));

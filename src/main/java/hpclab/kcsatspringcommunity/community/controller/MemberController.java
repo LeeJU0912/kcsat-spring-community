@@ -1,20 +1,26 @@
 package hpclab.kcsatspringcommunity.community.controller;
 
+import hpclab.kcsatspringcommunity.JWTUtil;
 import hpclab.kcsatspringcommunity.UserService;
+import hpclab.kcsatspringcommunity.admin.dto.UserRequestRequestForm;
+import hpclab.kcsatspringcommunity.admin.dto.UserRequestResponseForm;
+import hpclab.kcsatspringcommunity.admin.service.UserRequestService;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignInForm;
 import hpclab.kcsatspringcommunity.community.dto.MemberSignUpForm;
 import hpclab.kcsatspringcommunity.community.service.MemberService;
 import hpclab.kcsatspringcommunity.exception.ApiResponse;
+import hpclab.kcsatspringcommunity.question.domain.Choice;
+import hpclab.kcsatspringcommunity.question.domain.Question;
+import hpclab.kcsatspringcommunity.question.dto.QuestionDto;
+import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import static hpclab.kcsatspringcommunity.JWTUtil.USER_EMAIL;
 import static hpclab.kcsatspringcommunity.exception.SuccessCode.LOGIN_SUCCESS;
 import static hpclab.kcsatspringcommunity.exception.SuccessCode.SIGN_OUT_SUCCESS;
 
@@ -28,11 +34,16 @@ import static hpclab.kcsatspringcommunity.exception.SuccessCode.SIGN_OUT_SUCCESS
  */
 @Slf4j
 @RestController
+@RequestMapping("/api/member")
 @RequiredArgsConstructor
 public class MemberController {
 
+    private final QuestionService questionService;
+    private final UserRequestService userRequestService;
     private final MemberService memberService;
     private final UserService userService;
+
+    private final JWTUtil jwtUtil;
 
     /**
      * 회원가입하는 메서드입니다.
@@ -41,12 +52,13 @@ public class MemberController {
      * @param memberSignUpForm 회원가입을 위한 email 아이디, 비밀번호 양식입니다.
      * @return 회원가입이 정상적으로 이루어지면 ok, 그렇지 않으면 BAD_REQUEST 반환.
      */
-    @PostMapping("/api/community/open/signUp")
+    @PostMapping("/api/member/open/signUp")
     public ResponseEntity<ApiResponse<Void>> signup(@RequestBody @Valid MemberSignUpForm memberSignUpForm) {
         memberService.signUp(memberSignUpForm);
 
         return ResponseEntity.ok(new ApiResponse<>(true, null, LOGIN_SUCCESS.getCode(), LOGIN_SUCCESS.getMessage()));
     }
+
 
     /**
      * 로그인하는 메서드입니다.
@@ -54,7 +66,7 @@ public class MemberController {
      * @param form 로그인을 위한 email 아이디, 비밀번호 양식입니다.
      * @return 로그인에 성공하면 JWT 토큰을 반환하고, 실패하면 UNAUTHORIZED를 반환합니다.
      */
-    @PostMapping("/api/community/open/signIn")
+    @PostMapping("/internal/member/signIn")
     public ResponseEntity<String> signIn(@RequestBody MemberSignInForm form) {
         // 로그인 시도 및 토큰 발급
         String token = userService.login(form);
@@ -63,15 +75,50 @@ public class MemberController {
         return ResponseEntity.ok(token);
     }
 
+
     /**
-     * 로그아웃하는 메서드입니다.
+     * 문제 제작 후, 오류가 있는 문제에 대해 신고하는 메서드입니다.
      *
-     * @param token 로그아웃 처리를 위한 JWT Token 정보입니다.
-     * @return 로그아웃에 성공하면 OK를 반환합니다.
+     * @param token 회원 JWT 토큰
+     * @param form 오류 문제 세부 사항
+     * @return 보낸 문제에 대한 신고자, 문제 세부 사항 등 결과 객체
      */
-    @PostMapping("/api/community/open/signOut")
-    public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
-        userService.logout(token);
-        return ResponseEntity.ok(new ApiResponse<>(true, null, SIGN_OUT_SUCCESS.getCode(), SIGN_OUT_SUCCESS.getMessage()));
+    @PostMapping("/junk")
+    public ResponseEntity<ApiResponse<UserRequestResponseForm>> filterQuestion(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody QuestionDto form) {
+        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
+
+        Question question = Question
+                .builder()
+                .type(form.getQuestionType())
+                .title(form.getTitle())
+                .mainText(form.getMainText())
+                .choices(form.getChoices().stream().map(Choice::new).toList())
+                .answer(form.getAnswer())
+                .translation(form.getTranslation())
+                .explanation(form.getExplanation())
+                .shareCounter(0L)
+                .build();
+
+        Long qId = questionService.saveQuestion(question);
+
+        UserRequestResponseForm userRequestResponse = userRequestService.updateUserRequestForm(userRequestService.getQuestionErrorForm(qId, userEmail), userEmail);
+
+        return ResponseEntity.ok(new ApiResponse<>(true, userRequestResponse, null, null));
+    }
+
+    /**
+     * 회원 요청 사항을 요구하는 메서드입니다.
+     *
+     * @param token 회원 JWT 토큰
+     * @param form 오류 문제 세부 사항
+     * @return 보낸 문제에 대한 신고자, 문제 세부 사항 등 결과 객체
+     */
+    @PostMapping("/improving")
+    public ResponseEntity<ApiResponse<UserRequestResponseForm>> requestImproving(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody UserRequestRequestForm form) {
+        String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
+
+        UserRequestResponseForm userRequestResponse = userRequestService.updateUserRequestForm(userRequestService.getImprovingForm(form, userEmail), userEmail);
+
+        return ResponseEntity.ok(new ApiResponse<>(true, userRequestResponse, null, null));
     }
 }

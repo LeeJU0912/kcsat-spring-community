@@ -1,5 +1,6 @@
 package hpclab.kcsatspringcommunity.questionRank.controller;
 
+import hpclab.kcsatspringcommunity.exception.ApiResponse;
 import hpclab.kcsatspringcommunity.question.dto.QuestionResponseForm;
 import hpclab.kcsatspringcommunity.questionRank.service.QuestionRankService;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,9 @@ public class QuestionRankController {
      *
      * @return 가장 인기 있는 문제 5개를 선별하여 목록으로 반환합니다.
      */
-    @GetMapping("/api/community/open/weekly")
-    public ResponseEntity<List<QuestionResponseForm>> weeklyQuestionRank() {
+    @GetMapping("/api/question/open/weekly")
+    public ResponseEntity<ApiResponse<List<QuestionResponseForm>>> weeklyQuestionRank() {
 
-        return ResponseEntity.ok(questionRankService.getRankedQuestions());
+        return ResponseEntity.ok(new ApiResponse<>(true, questionRankService.getRankedQuestions(), null, null));
     }
 }

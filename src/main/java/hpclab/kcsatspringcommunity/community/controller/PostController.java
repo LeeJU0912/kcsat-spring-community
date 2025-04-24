@@ -1,17 +1,18 @@
 package hpclab.kcsatspringcommunity.community.controller;
 
 import hpclab.kcsatspringcommunity.JWTUtil;
-import hpclab.kcsatspringcommunity.community.dto.*;
+import hpclab.kcsatspringcommunity.community.dto.PostResponseForm;
+import hpclab.kcsatspringcommunity.community.dto.PostWriteForm;
 import hpclab.kcsatspringcommunity.community.service.PostService;
 import hpclab.kcsatspringcommunity.exception.ApiException;
 import hpclab.kcsatspringcommunity.exception.ApiResponse;
 import hpclab.kcsatspringcommunity.exception.ErrorCode;
 import hpclab.kcsatspringcommunity.myBook.dto.BookResponseForm;
 import hpclab.kcsatspringcommunity.myBook.service.BookService;
-import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import hpclab.kcsatspringcommunity.question.domain.Question;
 import hpclab.kcsatspringcommunity.question.domain.QuestionType;
 import hpclab.kcsatspringcommunity.question.dto.QuestionResponseForm;
+import hpclab.kcsatspringcommunity.question.service.QuestionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,6 +43,7 @@ import static hpclab.kcsatspringcommunity.exception.SuccessCode.POST_DELETE_SUCC
  */
 @Slf4j
 @RestController
+@RequestMapping("/api/community")
 @RequiredArgsConstructor
 public class PostController {
 
@@ -64,7 +66,7 @@ public class PostController {
      * @param type 타입 필터 (optional)
      * @return 게시글 목록을 Page 단위로 묶어서 반환합니다.
      */
-    @GetMapping("/api/community/open/board")
+    @GetMapping("/open/board")
     public ResponseEntity<ApiResponse<Page<PostResponseForm>>> getPostListByPage(@RequestParam(defaultValue = "0") int page,
                                                                                  @RequestParam(defaultValue = "10") int size,
                                                                                  @RequestParam(defaultValue = "pId,DESC") String sort,
@@ -97,7 +99,7 @@ public class PostController {
      * @param type 타입 필터 (optional)
      * @return 게시글 목록을 Page 단위로 묶어서 반환합니다.
      */
-    @GetMapping("/api/community/open/board/hot")
+    @GetMapping("/open/board/hot")
     public ResponseEntity<ApiResponse<Page<PostResponseForm>>> hotBoard(@RequestParam(defaultValue = "0") int page,
                                                            @RequestParam(defaultValue = "10") int size,
                                                            @RequestParam(defaultValue = "pId,DESC") String sort,
@@ -125,7 +127,7 @@ public class PostController {
      * @param pId 게시글 ID
      * @return 게시글 상세 정보를 반환합니다.
      */
-    @GetMapping("/api/community/board/post/{pId}")
+    @GetMapping("/board/post/{pId}")
     public ResponseEntity<ApiResponse<PostResponseForm>> board(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -142,7 +144,7 @@ public class PostController {
      * @param pId 게시글 ID
      * @return 게시글 추천 수를 반환합니다.
      */
-    @GetMapping("/api/community/board/post/{pId}/vote/up")
+    @GetMapping("/board/post/{pId}/vote/up")
     public ResponseEntity<ApiResponse<String>> getUpVotePost(@PathVariable Long pId) {
         return ResponseEntity.ok(new ApiResponse<>(true, postService.getIncreasePostVoteCount(pId), null, null));
     }
@@ -154,7 +156,7 @@ public class PostController {
      * @param pId 게시글 ID
      * @return 게시글 비추천 수를 반환합니다.
      */
-    @GetMapping("/api/community/board/post/{pId}/vote/down")
+    @GetMapping("/board/post/{pId}/vote/down")
     public ResponseEntity<ApiResponse<String>> getDownVotePost(@PathVariable Long pId) {
         return ResponseEntity.ok(new ApiResponse<>(true, postService.getDecreasePostVoteCount(pId), null, null));
     }
@@ -168,7 +170,7 @@ public class PostController {
      * @param pId 게시글 ID
      * @return 게시글 추천 수를 반환합니다.
      */
-    @PostMapping("/api/community/board/post/{pId}/vote/up")
+    @PostMapping("/board/post/{pId}/vote/up")
     public ResponseEntity<ApiResponse<String>> upVotePost(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
         return ResponseEntity.ok(new ApiResponse<>(true, postService.increasePostVoteCount(pId, userEmail), null, null));
@@ -183,7 +185,7 @@ public class PostController {
      * @param pId 게시글 ID
      * @return 게시글 비추천 수를 반환합니다.
      */
-    @PostMapping("/api/community/board/post/{pId}/vote/down")
+    @PostMapping("/board/post/{pId}/vote/down")
     public ResponseEntity<ApiResponse<String>> downVotePost(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
         return ResponseEntity.ok(new ApiResponse<>(true, postService.decreasePostVoteCount(pId, userEmail), null, null));
@@ -197,7 +199,7 @@ public class PostController {
      * @param form 등록 게시글 정보가 담긴 객체
      * @return 게시글을 저장하고 해당 게시글 상세 정보를 반환합니다.
      */
-    @PostMapping("/api/community/board/post")
+    @PostMapping("/board/post")
     public ResponseEntity<ApiResponse<PostResponseForm>> writePost(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @RequestBody PostWriteForm form) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -216,7 +218,7 @@ public class PostController {
      * @param form 수정 사항이 담긴 DTO 객체
      * @return 수정된 게시글 상세 정보를 담아 반환합니다.
      */
-    @PutMapping("/api/community/board/post/{pId}")
+    @PutMapping("/board/post/{pId}")
     public ResponseEntity<ApiResponse<PostResponseForm>> updateBoard(@RequestHeader(HttpHeaders.AUTHORIZATION) String token,
                                                       @PathVariable Long pId,
                                                       @RequestBody PostWriteForm form) {
@@ -238,7 +240,7 @@ public class PostController {
      * @param pId 게시글 ID
      * @return 권한이 확인되었고 정상적으로 삭제된다면 ok, 이외의 경우에는 BAD_REQUEST 발생.
      */
-    @DeleteMapping("/api/community/board/post/{pId}")
+    @DeleteMapping("/board/post/{pId}")
     public ResponseEntity<ApiResponse<String>> removeBoard(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long pId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -261,7 +263,7 @@ public class PostController {
      * @param qId 게시글 ID
      * @return 게시글에 첨부된 문제가 정상적으로 저장되면 ok, 그렇지 않으면 BAD_REQUEST 반환.
      */
-    @PostMapping("/api/community/board/post/{qId}/question")
+    @PostMapping("/board/post/{qId}/question")
     public ResponseEntity<ApiResponse<String>> saveQuestionFromPost(@RequestHeader(HttpHeaders.AUTHORIZATION) String token, @PathVariable Long qId) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -275,7 +277,7 @@ public class PostController {
      * @param token 회원 JWT 토큰
      * @return 회원이 저장한 모든 문제들의 리스트를 보여줍니다.
      */
-    @GetMapping("/api/community/board/post/uploadQuestion")
+    @GetMapping("/board/post/uploadQuestion")
     public ResponseEntity<ApiResponse<BookResponseForm>> getUserQuestions(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         String userEmail = jwtUtil.getClaims(token).get(USER_EMAIL).toString();
 
@@ -289,7 +291,7 @@ public class PostController {
      * @param qId 첨부할 문제 ID
      * @return 문제 상세 정보를 반환합니다.
      */
-    @PostMapping("/api/community/board/post/uploadQuestion")
+    @PostMapping("/board/post/uploadQuestion")
     public ResponseEntity<ApiResponse<QuestionResponseForm>> uploadUserQuestion(@RequestParam Long qId) {
 
         Question question = questionService.getQuestion(qId);
