@@ -23,7 +23,7 @@ import static hpclab.kcsatspringcommunity.util.JWTUtil.USER_EMAIL;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/question")
+@RequestMapping("/api/community")
 @RequiredArgsConstructor
 public class BookController {
 

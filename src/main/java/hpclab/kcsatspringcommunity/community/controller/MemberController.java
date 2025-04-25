@@ -34,7 +34,7 @@ import static hpclab.kcsatspringcommunity.exception.SuccessCode.LOGIN_SUCCESS;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/member")
+@RequestMapping("/api/community")
 @RequiredArgsConstructor
 public class MemberController {
 

@@ -26,7 +26,7 @@ public class QuestionRankController {
      *
      * @return 가장 인기 있는 문제 5개를 선별하여 목록으로 반환합니다.
      */
-    @GetMapping("/api/question/open/weekly")
+    @GetMapping("/api/community/question/open/weekly")
     public ResponseEntity<ApiResponse<List<QuestionResponseForm>>> weeklyQuestionRank() {
 
         return ResponseEntity.ok(new ApiResponse<>(true, questionRankService.getRankedQuestions(), null, null));
