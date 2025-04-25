@@ -37,7 +37,6 @@ import static java.lang.Math.min;
 public class CommentServiceImpl implements CommentService {
 
     private final MemberService memberService;
-    private final PostService postService;
 
     private final CommentRepository commentRepository;
 
