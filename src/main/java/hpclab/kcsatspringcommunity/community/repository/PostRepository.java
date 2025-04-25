@@ -24,6 +24,6 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
     @Query("SELECT DISTINCT p FROM Post p " +
             "LEFT JOIN FETCH p.member m " +
             "LEFT JOIN FETCH p.question q " +
-            "WHERE p.pId = :postId")
+            "WHERE p.id = :postId")
     Optional<Post> findByIdWithComments(@Param("postId") Long postId);
 }

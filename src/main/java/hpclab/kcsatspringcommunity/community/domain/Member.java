@@ -25,33 +25,33 @@ public class Member extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id")
-    private Long mID;
+    @Column(name = "id")
+    private Long id;
 
     /**
      * 회원의 권한을 나타냅니다. 자세한 사항은 Role 참조.
      */
-    @Column(name = "member_role", nullable = false)
+    @Column(name = "role", nullable = false)
     private Role role;
 
     /**
      * 회원 로그인시 사용될 email 아이디를 저장합니다.
      * 중복된 값을 허용하지 않습니다.
      */
-    @Column(name = "member_email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     /**
      * 회원 별명을 저장합니다.
      * 2~12자로 지정이 가능합니다.
      */
-    @Column(name = "member_name", nullable = false, unique = true)
+    @Column(name = "name", nullable = false, unique = true)
     private String username;
 
     /**
      * 회원 비밀번호를 저장합니다.
      */
-    @Column(name = "member_password", nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
     /**

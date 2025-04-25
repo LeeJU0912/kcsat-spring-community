@@ -45,7 +45,7 @@ public class MemberDetailsResponseForm {
 
     @Builder
     public MemberDetailsResponseForm(Member member) {
-        this.mId = member.getMID();
+        this.mId = member.getId();
         this.email = member.getEmail();
         this.username = member.getUsername();
         this.createdDate = member.getCreatedDate();

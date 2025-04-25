@@ -20,7 +20,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
      * @param pId 게시글 객체입니다.
      * @return pId 게시글 안에 있는 모든 댓글 리스트를 반환합니다.
      */
-    List<Comment> findByPId(Long pId);
+    List<Comment> findByPostId(Long pId);
 
     /**
      * 댓글 ID와 일치하는 댓글을 조회하는 메서드입니다.
@@ -30,6 +30,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
      * @param cId 댓글 ID
      * @return 댓글 ID에 맞는 댓글을 반환합니다. 만약 찾는 댓글이 없는 경우, NoSuchElementException을 반환합니다.
      */
-    @Query("SELECT c FROM Comment c LEFT JOIN FETCH c.member WHERE c.cId = :cId")
+    @Query("SELECT c FROM Comment c LEFT JOIN FETCH c.member WHERE c.id = :cId")
     Optional<Comment> findCommentWithMember(Long cId);
 }

@@ -48,7 +48,7 @@ public class CommentResponseForm {
     public CommentResponseForm(Comment comment) {
         this.createdDateTime = comment.getCreatedDate();
         this.modifiedDateTime = comment.getLastModifiedDate();
-        this.cId = comment.getCId();
+        this.cId = comment.getId();
         this.content = comment.getContent();
         this.username = comment.getMember().getUsername();
         this.email = comment.getMember().getEmail();

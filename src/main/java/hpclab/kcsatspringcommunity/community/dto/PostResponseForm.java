@@ -65,7 +65,7 @@ public class PostResponseForm {
 
     @Builder
     public PostResponseForm(Post post, Long postViewCount) {
-        this.pId = post.getPId();
+        this.pId = post.getId();
         this.title = post.getPostTitle();
         this.content = post.getPostContent();
         this.postDate = post.getCreatedDate();
@@ -85,7 +85,7 @@ public class PostResponseForm {
     }
 
     public PostResponseForm(Post post) {
-        this.pId = post.getPId();
+        this.pId = post.getId();
         this.title = post.getPostTitle();
         this.content = post.getPostContent();
         this.postDate = post.getCreatedDate();

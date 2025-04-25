@@ -22,31 +22,31 @@ public class Question extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "question_id")
+    @Column(name = "id")
     private Long id;
 
     /**
      * 문제 유형입니다. 자세한 사항은 QuestionType 참조
      */
-    @Column(name = "question_type", nullable = false)
+    @Column(name = "type", nullable = false)
     private QuestionType type;
 
     /**
      * 문제 제목
      */
-    @Column(name = "question_title", nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
 
     /**
      * 문제 공유 수(게시판에서 공유한 수)
      */
-    @Column(name = "question_share_counter", nullable = false)
+    @Column(name = "share_counter", nullable = false)
     private Long shareCounter;
 
     /**
      * 문제 본문
      */
-    @Column(name = "question_text", length = 2048, nullable = false)
+    @Column(name = "main_text", length = 2048, nullable = false)
     private String mainText;
 
     /**

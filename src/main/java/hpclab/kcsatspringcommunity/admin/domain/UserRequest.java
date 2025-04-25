@@ -26,32 +26,32 @@ public class UserRequest extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue
-    @Column(name = "user_request_id")
+    @Column(name = "id")
     private Long id;
 
     /**
      * 회원 요청 사항에 따라 타입이 구별됩니다.
      * 자세한 사항은 RequestType 참조.
      */
-    @Column(name = "user_request_type", nullable = false)
+    @Column(name = "type", nullable = false)
     private RequestType type;
 
     /**
      * 회원 요청 사항 본문입니다.
      * 최대 2048자만 적을 수 있습니다.
      */
-    @Column(name = "user_request_content", nullable = false, length = 2048)
+    @Column(name = "content", nullable = false, length = 2048)
     private String content;
 
     /**
      * 요청 사항을 등록한 회원 이름입니다.
      */
-    @Column(name = "user_request_member_name", nullable = false)
+    @Column(name = "member_name", nullable = false)
     private String username;
 
     /**
      * 오류가 있는 문제를 신고하는 경우, 문제 ID도 같이 등록됩니다. (이외에는 null)
      */
-    @Column(name = "user_request_question_id")
-    private Long qId;
+    @Column(name = "question_id")
+    private Long questionId;
 }

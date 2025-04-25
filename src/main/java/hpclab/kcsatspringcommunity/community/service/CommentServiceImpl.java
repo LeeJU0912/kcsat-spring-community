@@ -37,6 +37,7 @@ import static java.lang.Math.min;
 public class CommentServiceImpl implements CommentService {
 
     private final MemberService memberService;
+    private final PostService postService;
 
     private final CommentRepository commentRepository;
 
@@ -49,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
 
         String hexString = Integer.toHexString(commentWriteForm.getContent().hashCode());
 
-        String redisKey = RedisKeyUtil.commentIdemCheck(member.getMID(), hexString);
+        String redisKey = RedisKeyUtil.commentIdemCheck(member.getId(), hexString);
 
         Boolean locked = redisTemplate.opsForValue().setIfAbsent(redisKey, "locked", Duration.ofMinutes(1));
 
@@ -60,19 +61,19 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = Comment.builder()
                 .content(commentWriteForm.getContent())
                 .member(member)
-                .pId(pId)
+                .postId(pId)
                 .build();
 
         commentRepository.save(comment);
 
-        return comment.getCId();
+        return comment.getId();
     }
 
     @Transactional(readOnly = true)
     @Override
     public CommentDetailForm getAllComments(Long pId) {
 
-        List<Comment> comments = commentRepository.findByPId(pId);
+        List<Comment> comments = commentRepository.findByPostId(pId);
         List<CommentResponseForm> hotComments = getHotComments(comments);
         List<CommentResponseForm> normalComments = new ArrayList<>();
         comments.forEach(comment -> normalComments.add(new CommentResponseForm(comment)));
@@ -115,8 +116,8 @@ public class CommentServiceImpl implements CommentService {
 
         List<CommentsSort> commentsSort = new ArrayList<>();
         comments.forEach(comment -> {
-            String upVote = redisTemplate.opsForValue().get(RedisKeyUtil.commentUpVote(comment.getCId()));
-            String downVote = redisTemplate.opsForValue().get(RedisKeyUtil.commentDownVote(comment.getCId()));
+            String upVote = redisTemplate.opsForValue().get(RedisKeyUtil.commentUpVote(comment.getId()));
+            String downVote = redisTemplate.opsForValue().get(RedisKeyUtil.commentDownVote(comment.getId()));
 
             try {
                 long calc = Long.parseLong(upVote) - Long.parseLong(downVote);

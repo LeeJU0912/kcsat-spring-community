@@ -23,7 +23,7 @@ public class BookQuestion extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "book_question_id")
+    @Column(name = "id")
     private Long id;
 
     /**

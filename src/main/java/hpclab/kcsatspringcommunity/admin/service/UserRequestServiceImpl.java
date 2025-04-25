@@ -70,7 +70,7 @@ public class UserRequestServiceImpl implements UserRequestService {
                     .type(form.getType())
                     .content(form.getContent())
                     .username(email)
-                    .qId(0L)
+                    .questionId(0L)
                     .build());
         }
         else {
@@ -78,7 +78,7 @@ public class UserRequestServiceImpl implements UserRequestService {
                     .type(form.getType())
                     .content(form.getContent())
                     .username(email)
-                    .qId(form.getQuestion().getId())
+                    .questionId(form.getQuestion().getId())
                     .build());
         }
 
@@ -96,7 +96,7 @@ public class UserRequestServiceImpl implements UserRequestService {
 
             Member member = memberService.findMemberByEmail(request.getUsername());
 
-            if (request.getQId() == 0L) {
+            if (request.getQuestionId() == 0L) {
                 form = UserRequestResponseForm.builder()
                         .type(request.getType())
                         .content(request.getContent())
@@ -108,7 +108,7 @@ public class UserRequestServiceImpl implements UserRequestService {
                         .type(request.getType())
                         .content(request.getContent())
                         .member(member)
-                        .question(questionService.getQuestion(request.getQId()))
+                        .question(questionService.getQuestion(request.getQuestionId()))
                         .build();
             }
 

@@ -22,13 +22,13 @@ public class Book extends BaseTimeEntity {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "book_id")
+    @Column(name = "id")
     private Long id;
 
     /**
      * 회원 email 아이디
      */
-    @Column(name = "member_email")
+    @Column(name = "member_email", nullable = false, unique = true)
     private String email;
 
     /**

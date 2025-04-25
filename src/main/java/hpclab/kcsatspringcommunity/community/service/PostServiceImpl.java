@@ -47,7 +47,7 @@ public class PostServiceImpl implements PostService {
         Member member = memberService.findMemberByEmail(email);
 
         String titleHash = Integer.toHexString(postWriteForm.getTitle().hashCode());
-        String redisKey = RedisKeyUtil.postIdemCheck(member.getMID(), titleHash);
+        String redisKey = RedisKeyUtil.postIdemCheck(member.getId(), titleHash);
 
         Boolean success = redisTemplate.opsForValue()
                 .setIfAbsent(redisKey, "locked", Duration.ofMinutes(1));
@@ -77,9 +77,9 @@ public class PostServiceImpl implements PostService {
 
         postRepository.save(result);
 
-        setPostCount(result.getPId());
+        setPostCount(result.getId());
 
-        return result.getPId();
+        return result.getId();
     }
 
     @Transactional
@@ -133,7 +133,7 @@ public class PostServiceImpl implements PostService {
     private Page<PostResponseForm> makePostPageDTO(Pageable pageable, Page<Post> posts) {
         List<PostResponseForm> postResponseForm = new ArrayList<>();
 
-        posts.forEach(post -> postResponseForm.add(new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId())))));
+        posts.forEach(post -> postResponseForm.add(new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getId())))));
 
         return new PageImpl<>(postResponseForm, pageable, posts.getTotalElements());
     }
@@ -153,7 +153,7 @@ public class PostServiceImpl implements PostService {
 
         post.update(postWriteForm.getTitle(), postWriteForm.getContent());
 
-        return new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getPId())));
+        return new PostResponseForm(post, Long.parseLong(getPostViewCount(post.getId())));
     }
 
     @Transactional
