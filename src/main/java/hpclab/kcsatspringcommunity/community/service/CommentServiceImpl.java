@@ -142,7 +142,7 @@ public class CommentServiceImpl implements CommentService {
         return hotComments;
     }
 
-    private class CommentsSort {
+    private static class CommentsSort {
         Long counter;
         Comment comment;
 
